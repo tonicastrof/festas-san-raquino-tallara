@@ -264,7 +264,20 @@ function renderSocial() {
 /* ── Footer ── */
 function renderFooter() {
   const copy = document.getElementById('footerCopy');
-  if (copy) copy.textContent = `© ${new Date().getFullYear()} Comisión de Festas de San Roquiño de Tállara`;
+  if (!copy) return;
+  copy.textContent = `© ${new Date().getFullYear()} Comisión de Festas de San Roquiño de Tállara`;
+
+  let tid = null;
+  const start = () => { tid = setTimeout(() => window.location.href = 'admin.html', 3000); };
+  const cancel = () => clearTimeout(tid);
+  copy.addEventListener('mousedown', start);
+  copy.addEventListener('mouseup', cancel);
+  copy.addEventListener('mouseleave', cancel);
+  copy.addEventListener('touchstart', start, { passive: true });
+  copy.addEventListener('touchend', cancel);
+  copy.addEventListener('touchcancel', cancel);
+  copy.style.userSelect = 'none';
+  copy.style.webkitUserSelect = 'none';
 }
 
 /* ── Map ── */
