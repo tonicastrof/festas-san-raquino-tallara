@@ -145,6 +145,8 @@ function renderActividades() {
 }
 
 /* ── Programa ── */
+let anteriorOpen = false;
+
 const TIPO_CONFIG = {
   gaitas:     { color: '#1a5c2a', bg: '#e8f5ec', icon: '🎶' },
   vermu:      { color: '#92400e', bg: '#fef3c7', icon: '🥂' },
@@ -206,8 +208,14 @@ function renderPrograma() {
       ? `<div class="programa-anterior-wrap">
            <div class="programa-anterior-header">
              <span class="programa-anterior-badge">${T[lang].festas_anterior_label} · ${DATA.programa_anterior_year}</span>
+             <button class="programa-anterior-toggle" id="toggleAnterior" aria-expanded="${anteriorOpen}">
+               <span class="toggle-label">${anteriorOpen ? T[lang].festas_anterior_ocultar : T[lang].festas_anterior_mostrar}</span>
+               <span class="toggle-arrow">&#9660;</span>
+             </button>
            </div>
-           <div class="programa-grid-new">${buildDiaCards(DATA.programa_anterior)}</div>
+           <div class="programa-anterior-content${anteriorOpen ? ' is-open' : ''}" id="anteriorContent">
+             <div class="programa-grid-new">${buildDiaCards(DATA.programa_anterior)}</div>
+           </div>
          </div>`
       : '';
 
@@ -222,6 +230,19 @@ function renderPrograma() {
         </div>
       </div>
       ${anteriorHtml}`;
+
+    const toggleBtn = document.getElementById('toggleAnterior');
+    const anteriorContent = document.getElementById('anteriorContent');
+    if (toggleBtn && anteriorContent) {
+      toggleBtn.addEventListener('click', () => {
+        anteriorOpen = !anteriorOpen;
+        anteriorContent.classList.toggle('is-open', anteriorOpen);
+        toggleBtn.setAttribute('aria-expanded', String(anteriorOpen));
+        toggleBtn.querySelector('.toggle-label').textContent = anteriorOpen
+          ? T[lang].festas_anterior_ocultar
+          : T[lang].festas_anterior_mostrar;
+      });
+    }
     return;
   }
 
