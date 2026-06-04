@@ -742,11 +742,25 @@ a.novidade-card {
 }
 
 .programa-anterior-content {
-  display: none;
-  padding-top: 0.5rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s ease;
+  overflow: hidden;
 }
 .programa-anterior-content.is-open {
-  display: block;
+  grid-template-rows: 1fr;
+}
+.programa-anterior-content-inner {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
+  padding-top: 0.5rem;
+}
+.programa-anterior-content.is-open .programa-anterior-content-inner {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .programa-grid-new {

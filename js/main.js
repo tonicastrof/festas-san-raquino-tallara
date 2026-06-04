@@ -214,7 +214,9 @@ function renderPrograma() {
              </button>
            </div>
            <div class="programa-anterior-content${anteriorOpen ? ' is-open' : ''}" id="anteriorContent">
-             <div class="programa-grid-new">${buildDiaCards(DATA.programa_anterior)}</div>
+             <div class="programa-anterior-content-inner">
+               <div class="programa-grid-new">${buildDiaCards(DATA.programa_anterior)}</div>
+             </div>
            </div>
          </div>`
       : '';
