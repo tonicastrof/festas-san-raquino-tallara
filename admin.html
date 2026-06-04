@@ -214,12 +214,50 @@
       padding:.5rem .875rem;
     }
 
+    /* ── Debuxos grid ── */
+    .debuxos-grid {
+      display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+      gap:1.25rem;
+    }
+    .debuxo-card {
+      background:#fff; border-radius:var(--r); overflow:hidden;
+      box-shadow:0 1px 4px rgba(0,0,0,.06); display:flex; flex-direction:column;
+    }
+    .debuxo-img-wrap {
+      aspect-ratio:4/3; overflow:hidden; background:#f9fafb;
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+    }
+    .debuxo-img-wrap img {
+      width:100%; height:100%; object-fit:contain;
+    }
+    .debuxo-img-wrap .debuxo-pdf {
+      display:flex; flex-direction:column; align-items:center; gap:.5rem;
+      color:var(--gris); font-size:.875rem; text-decoration:none;
+    }
+    .debuxo-img-wrap .debuxo-pdf:hover { color:var(--verde); }
+    .debuxo-info {
+      padding:1rem; display:flex; flex-direction:column; gap:.25rem;
+    }
+    .debuxo-nome { font-weight:700; font-size:.9375rem; }
+    .debuxo-meta { font-size:.8rem; color:var(--gris); }
+    .debuxo-meta a { color:inherit; text-decoration:none; }
+    .debuxo-meta a:hover { text-decoration:underline; }
+
+    /* ── Lightbox ── */
+    .lightbox {
+      position:fixed; inset:0; background:rgba(0,0,0,.85);
+      display:flex; align-items:center; justify-content:center;
+      z-index:600; cursor:zoom-out; padding:1rem;
+    }
+    .lightbox img { max-width:95%; max-height:95vh; object-fit:contain; border-radius:8px; }
+
     @media (max-width:768px) {
       .stats-grid { grid-template-columns:repeat(3,1fr); }
       .adm-main   { padding:1rem; }
       .table-wrapper { overflow-x:auto; }
       .ins-table  { min-width:700px; }
       .export-btn { margin-left:0; }
+      .debuxos-grid { grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -262,6 +300,9 @@
         <button class="stab" id="tabMensaxes" onclick="switchTab('mensaxes')">
           ✉️ Mensaxes <span id="badgeMensaxes" class="badge-count"></span>
         </button>
+        <button class="stab" id="tabDebuxos" onclick="switchTab('debuxos')">
+          🎨 Debuxos <span id="badgeDebuxos" class="badge-count"></span>
+        </button>
       </div>
 
       <!-- ── INSCRICIÓNS ── -->
@@ -296,6 +337,13 @@
       <div id="viewMensaxes" style="display:none">
         <div class="table-wrapper" id="mensaxesWrapper">
           <div class="table-msg">Cargando mensaxes…</div>
+        </div>
+      </div>
+
+      <!-- ── DEBUXOS ── -->
+      <div id="viewDebuxos" style="display:none">
+        <div id="debuxosWrapper">
+          <div class="table-msg">Cargando debuxos…</div>
         </div>
       </div>
 
@@ -534,9 +582,12 @@
     function switchTab(tab) {
       document.getElementById('viewInscripcions').style.display = tab === 'inscripcions' ? 'block' : 'none';
       document.getElementById('viewMensaxes').style.display     = tab === 'mensaxes'     ? 'block' : 'none';
+      document.getElementById('viewDebuxos').style.display      = tab === 'debuxos'      ? 'block' : 'none';
       document.getElementById('tabInscripcions').classList.toggle('active', tab === 'inscripcions');
       document.getElementById('tabMensaxes').classList.toggle('active',     tab === 'mensaxes');
+      document.getElementById('tabDebuxos').classList.toggle('active',      tab === 'debuxos');
       if (tab === 'mensaxes' && !mensaxesLoaded) loadMensaxes();
+      if (tab === 'debuxos'  && !debuxosLoaded)  loadDebuxos();
     }
 
     /* ── Mensaxes ───────────────────────────────────────────────────────── */
@@ -557,6 +608,7 @@
     function updateBadges() {
       document.getElementById('badgeMensaxes').textContent     = allMensaxes.filter(m => !m.lido).length  || '';
       document.getElementById('badgeInscripcions').textContent = allData.filter(i => i.estado==='pendente').length || '';
+      document.getElementById('badgeDebuxos').textContent      = allDebuxos.length || '';
     }
 
     function renderMensaxes() {
@@ -611,6 +663,61 @@
         if (m) m.lido = lido;
         renderMensaxes(); updateBadges();
       }
+    }
+
+    /* ── Debuxos ────────────────────────────────────────────────────────── */
+    let allDebuxos    = [];
+    let debuxosLoaded = false;
+
+    async function loadDebuxos() {
+      const { data, error } = await sb
+        .from('debuxos')
+        .select('id,nome,telefono,email,arquivo_url,created_at')
+        .order('created_at', { ascending: false });
+      if (!error) {
+        allDebuxos = data || []; debuxosLoaded = true;
+        renderDebuxos(); updateBadges();
+      }
+    }
+
+    function renderDebuxos() {
+      const wrap = document.getElementById('debuxosWrapper');
+      if (!allDebuxos.length) {
+        wrap.innerHTML = '<div class="table-msg">Non hai debuxos enviados.</div>';
+        return;
+      }
+      wrap.innerHTML = `<div class="debuxos-grid">${allDebuxos.map(cardDebuxo).join('')}</div>`;
+      wrap.querySelectorAll('.debuxo-img-wrap[data-url]').forEach(el =>
+        el.addEventListener('click', () => openLightbox(el.dataset.url))
+      );
+    }
+
+    function cardDebuxo(d) {
+      const date = new Date(d.created_at).toLocaleDateString('gl', {day:'2-digit',month:'2-digit',year:'2-digit'});
+      const isPdf = d.arquivo_url.toLowerCase().endsWith('.pdf');
+      const preview = isPdf
+        ? `<a class="debuxo-pdf" href="${x(d.arquivo_url)}" target="_blank">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Ver PDF
+          </a>`
+        : `<img src="${x(d.arquivo_url)}" alt="Debuxo de ${x(d.nome)}" loading="lazy">`;
+      const clickAttr = isPdf ? '' : `data-url="${x(d.arquivo_url)}"`;
+      return `<div class="debuxo-card">
+        <div class="debuxo-img-wrap" ${clickAttr}>${preview}</div>
+        <div class="debuxo-info">
+          <div class="debuxo-nome">${x(d.nome)}</div>
+          <div class="debuxo-meta"><a href="mailto:${x(d.email)}">${x(d.email)}</a></div>
+          <div class="debuxo-meta"><a href="tel:${x(d.telefono)}">${x(d.telefono)}</a> · ${date}</div>
+        </div>
+      </div>`;
+    }
+
+    function openLightbox(url) {
+      const lb = document.createElement('div');
+      lb.className = 'lightbox';
+      lb.innerHTML = `<img src="${url}" alt="Debuxo">`;
+      lb.addEventListener('click', () => lb.remove());
+      document.body.appendChild(lb);
     }
 
     /* ── Modal de resposta ──────────────────────────────────────────────── */

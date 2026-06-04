@@ -260,7 +260,7 @@
         }
       });
 
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         msg.textContent = '';
         msg.className = 'form-message';
@@ -284,13 +284,52 @@
           return;
         }
 
-        // TODO: Enviar por email (integración futura)
-        // Por agora, mostramos mensaxe de éxito
+        const btn = form.querySelector('.form-submit');
+        btn.disabled = true;
+        btn.textContent = lang === 'gl' ? 'Enviando…' : 'Enviando…';
+
+        const ext = file.name.split('.').pop();
+        const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error: uploadErr } = await sb
+          .storage.from('debuxos').upload(path, file, {
+            contentType: file.type,
+            upsert: false,
+          });
+
+        if (uploadErr) {
+          console.error('Upload error:', uploadErr);
+          msg.textContent = T[lang].form_error;
+          msg.classList.add('form-message-error');
+          btn.disabled = false;
+          btn.textContent = T[lang].form_submit;
+          return;
+        }
+
+        const { data: urlData } = sb.storage.from('debuxos').getPublicUrl(path);
+
+        const { error: dbErr } = await sb.from('debuxos').insert([{
+          nome: name,
+          telefono: phone,
+          email: email,
+          arquivo_url: urlData.publicUrl,
+        }]);
+
+        if (dbErr) {
+          msg.textContent = T[lang].form_error;
+          msg.classList.add('form-message-error');
+          btn.disabled = false;
+          btn.textContent = T[lang].form_submit;
+          return;
+        }
+
         msg.textContent = T[lang].form_success;
         msg.classList.add('form-message-success');
         form.reset();
         fileLabel.textContent = T[lang].form_file_help;
         fileLabel.closest('.file-upload').classList.remove('has-file');
+        btn.disabled = false;
+        btn.textContent = T[lang].form_submit;
       });
     }
 

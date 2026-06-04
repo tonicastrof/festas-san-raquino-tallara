@@ -1743,7 +1743,7 @@ a.novidade-card {
 
 .form-group-sm { max-width: 140px; }
 
-.form-group label {
+.nd-block-dark .form-group label {
   font-size: 0.875rem;
   font-weight: 600;
   color: rgba(255,255,255,0.9);
