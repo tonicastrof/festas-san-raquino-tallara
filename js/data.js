@@ -26,13 +26,13 @@ const DATA = {
       image: "img/xantar-popular.jpg",
       gl: {
         title: "I Xantar Popular",
-        subtitle: "16 de agosto · San Roquiño Tállara · 40 €",
+        subtitle: "16 de agosto · San Roquiño Tállara · Pulpo, churrasco e moito máis!",
         cta: "Máis información",
         ctaLink: "novidade.html#xantar-popular",
       },
       es: {
         title: "I Xantar Popular",
-        subtitle: "16 de agosto · San Roquiño Tállara · 40 €",
+        subtitle: "16 de agosto · San Roquiño Tállara · ¡Pulpo, churrasco y mucho más!",
         cta: "Más información",
         ctaLink: "novidade.html#xantar-popular",
       },
@@ -52,40 +52,80 @@ const DATA = {
         ctaLink: "novidade.html#libro-san-roquino",
       },
     },
-    {
-      icon: "🎅",
-      gl: {
-        title: "A Aldea de Papa Noel",
-        subtitle: "Cada Nadal, Tállara transfórmase nunha aldea máxica",
-        cta: "Ver actividade",
-        ctaLink: "actividade.html#aldea-papa-noel",
-      },
-      es: {
-        title: "La Aldea de Papá Noel",
-        subtitle: "Cada Navidad, Tállara se transforma en una aldea mágica",
-        cta: "Ver actividad",
-        ctaLink: "actividade.html#aldea-papa-noel",
-      },
-    },
-    {
-      icon: "🌙",
-      gl: {
-        title: "Ruta Nocturna",
-        subtitle: "Descobre as paisaxes de Lousame baixo o ceo estrelado",
-        cta: "Ver actividade",
-        ctaLink: "actividade.html#ruta-nocturna",
-      },
-      es: {
-        title: "Ruta Nocturna",
-        subtitle: "Descubre los paisajes de Lousame bajo el cielo estrellado",
-        cta: "Ver actividad",
-        ctaLink: "actividade.html#ruta-nocturna",
-      },
-    },
   ],
 
   /* ── Novidades ─────────────────────────────────────────── */
   novidades: [
+    {
+      slug: "xantar-popular",
+      emoji: "🍽️",
+      image: "img/xantar-popular.jpg",
+      eventoSlug: "xantar-popular",
+      gl: {
+        date:  "Agosto 2026",
+        title: "I Xantar Popular de San Roquiño",
+        text:  "Primeira edición do Xantar Popular! Pulpo a fartar, churrasco, bebida, café e postre por 40€. O 16 de agosto en Tállara.",
+        detail: {
+          intro: "A Comisión de Festas de San Roquiño organiza a primeira edición do Xantar Popular. Unha tarde de gastronomía, música, bingo e sorteos para toda a parroquia e visitantes. Acompáñanos o 16 de agosto en San Roquiño Tállara!",
+          infoCards: [
+            { icon: "📅", label: "Data",           value: "16 de agosto de 2026" },
+            { icon: "📍", label: "Lugar",          value: "San Roquiño Tállara, Lousame" },
+            { icon: "💶", label: "Adultos",        value: "40 €" },
+            { icon: "👶", label: "Nenos/as",       value: "0–5 anos gratis · 6–12 anos: 22 €" },
+          ],
+          sections: [
+            {
+              icon: "🐙",
+              title: "Que inclúe o menú?",
+              content: "Pulpo a fartar · Churrasco · Bebida · Café · Postre",
+            },
+            {
+              icon: "🎉",
+              title: "E ademais...",
+              content: "Bingo, música, sorteos e moito máis durante toda a tarde!",
+            },
+            {
+              icon: "🎟️",
+              title: "Venta de tickets",
+              content: "No Estanco de Tállara. Tamén todos os domingos de xullo de 12:00 a 13:00 en San Roquiño.",
+            },
+          ],
+          closing: "Non te quedes fóra desta primeira edición! Anótate online ou merca o teu ticket no Estanco de Tállara.",
+        },
+      },
+      es: {
+        date:  "Agosto 2026",
+        title: "I Xantar Popular de San Roquiño",
+        text:  "¡Primera edición del Xantar Popular! Pulpo a fartar, churrasco, bebida, café y postre por 40€. El 16 de agosto en Tállara.",
+        detail: {
+          intro: "La Comisión de Fiestas de San Roquiño organiza la primera edición del Xantar Popular. Una tarde de gastronomía, música, bingo y sorteos para toda la parroquia y visitantes. ¡Acompáñanos el 16 de agosto en San Roquiño Tállara!",
+          infoCards: [
+            { icon: "📅", label: "Fecha",          value: "16 de agosto de 2026" },
+            { icon: "📍", label: "Lugar",          value: "San Roquiño Tállara, Lousame" },
+            { icon: "💶", label: "Adultos",        value: "40 €" },
+            { icon: "👶", label: "Niños/as",       value: "0–5 años gratis · 6–12 años: 22 €" },
+          ],
+          sections: [
+            {
+              icon: "🐙",
+              title: "¿Qué incluye el menú?",
+              content: "Pulpo a fartar · Churrasco · Bebida · Café · Postre",
+            },
+            {
+              icon: "🎉",
+              title: "Y además...",
+              content: "¡Bingo, música, sorteos y mucho más durante toda la tarde!",
+            },
+            {
+              icon: "🎟️",
+              title: "Venta de tickets",
+              content: "En el Estanco de Tállara. También todos los domingos de julio de 12:00 a 13:00 en San Roquiño.",
+            },
+          ],
+          closing: "¡No te quedes fuera de esta primera edición! Apúntate online o compra tu ticket en el Estanco de Tállara.",
+        },
+      },
+    },
     {
       slug: "libro-san-roquino",
       emoji: "📖",
@@ -219,76 +259,6 @@ const DATA = {
             },
           ],
           closing: "¡Seguimos trabajando para que las fiestas de San Roquiño sean, un año más, un punto de encuentro, alegría y convivencia para todos! ¡Estas fiestas son de todos!",
-        },
-      },
-    },
-    {
-      slug: "xantar-popular",
-      emoji: "🍽️",
-      image: "img/xantar-popular.jpg",
-      eventoSlug: "xantar-popular",
-      gl: {
-        date:  "Agosto 2026",
-        title: "I Xantar Popular de San Roquiño",
-        text:  "Primeira edición do Xantar Popular! Pulpo a fartar, churrasco, bebida, café e postre por 40€. O 16 de agosto en Tállara.",
-        detail: {
-          intro: "A Comisión de Festas de San Roquiño organiza a primeira edición do Xantar Popular. Unha tarde de gastronomía, música, bingo e sorteos para toda a parroquia e visitantes. Acompáñanos o 16 de agosto en San Roquiño Tállara!",
-          infoCards: [
-            { icon: "📅", label: "Data",           value: "16 de agosto de 2026" },
-            { icon: "📍", label: "Lugar",          value: "San Roquiño Tállara, Lousame" },
-            { icon: "💶", label: "Adultos",        value: "40 €" },
-            { icon: "👶", label: "Nenos/as",       value: "0–5 anos gratis · 6–12 anos: 22 €" },
-          ],
-          sections: [
-            {
-              icon: "🐙",
-              title: "Que inclúe o menú?",
-              content: "Pulpo a fartar · Churrasco · Bebida · Café · Postre",
-            },
-            {
-              icon: "🎉",
-              title: "E ademais...",
-              content: "Bingo, música, sorteos e moito máis durante toda a tarde!",
-            },
-            {
-              icon: "🎟️",
-              title: "Venta de tickets",
-              content: "No Estanco de Tállara. Tamén todos os domingos de xullo de 12:00 a 13:00 en San Roquiño.",
-            },
-          ],
-          closing: "Non te quedes fóra desta primeira edición! Anótate online ou merca o teu ticket no Estanco de Tállara.",
-        },
-      },
-      es: {
-        date:  "Agosto 2026",
-        title: "I Xantar Popular de San Roquiño",
-        text:  "¡Primera edición del Xantar Popular! Pulpo a fartar, churrasco, bebida, café y postre por 40€. El 16 de agosto en Tállara.",
-        detail: {
-          intro: "La Comisión de Fiestas de San Roquiño organiza la primera edición del Xantar Popular. Una tarde de gastronomía, música, bingo y sorteos para toda la parroquia y visitantes. ¡Acompáñanos el 16 de agosto en San Roquiño Tállara!",
-          infoCards: [
-            { icon: "📅", label: "Fecha",          value: "16 de agosto de 2026" },
-            { icon: "📍", label: "Lugar",          value: "San Roquiño Tállara, Lousame" },
-            { icon: "💶", label: "Adultos",        value: "40 €" },
-            { icon: "👶", label: "Niños/as",       value: "0–5 años gratis · 6–12 años: 22 €" },
-          ],
-          sections: [
-            {
-              icon: "🐙",
-              title: "¿Qué incluye el menú?",
-              content: "Pulpo a fartar · Churrasco · Bebida · Café · Postre",
-            },
-            {
-              icon: "🎉",
-              title: "Y además...",
-              content: "¡Bingo, música, sorteos y mucho más durante toda la tarde!",
-            },
-            {
-              icon: "🎟️",
-              title: "Venta de tickets",
-              content: "En el Estanco de Tállara. También todos los domingos de julio de 12:00 a 13:00 en San Roquiño.",
-            },
-          ],
-          closing: "¡No te quedes fuera de esta primera edición! Apúntate online o compra tu ticket en el Estanco de Tállara.",
         },
       },
     },
