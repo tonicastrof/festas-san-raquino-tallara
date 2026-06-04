@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="gl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actividade – San Roquiño</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img class="nav-logo-icon" src="img/logoweb.jpg" alt="San Roquiño">
+        <span class="nav-logo-text">San Roquiño</span>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html#novidades" data-i18n="nav_novidades">Novidades</a>
+        <a href="index.html#actividades" data-i18n="nav_actividades">Actividades</a>
+        <a href="index.html#festas" data-i18n="nav_festas">Festas</a>
+        <a href="index.html#patrocinadores" data-i18n="nav_patrocinadores">Patrocinadores</a>
+        <a href="index.html#localizacion" data-i18n="nav_localizacion">Localización</a>
+        <a href="index.html#contacto" data-i18n="nav_contacto">Contacto</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="lang-btn" id="langToggle" aria-label="Cambiar idioma">ES</button>
+        <button class="nav-burger" id="navBurger" aria-label="Menú" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── DETAIL CONTENT ── -->
+  <main class="detail-page" id="detailPage">
+    <!-- Rendered by JS -->
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img class="footer-logo-icon" src="img/logoweb.jpg" alt="San Roquiño">
+        <p class="footer-name" data-i18n="footer_name">Comisión de Festas de San Roquiño de Tállara</p>
+        <p class="footer-location">Tállara · Lousame · A Coruña</p>
+      </div>
+      <p class="footer-copy" id="footerCopy"></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    /* ── Mobile nav ── */
+    const burger   = document.getElementById('navBurger');
+    const navLinks = document.getElementById('navLinks');
+
+    burger.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      burger.classList.toggle('open', isOpen);
+      burger.setAttribute('aria-expanded', isOpen);
+    });
+
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        burger.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    /* ── Render detail ── */
+    function renderDetail() {
+      const id = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('id');
+      const page = document.getElementById('detailPage');
+      const copy = document.getElementById('footerCopy');
+
+      if (copy) copy.textContent = '© ' + new Date().getFullYear() + ' Comisión de Festas de San Roquiño de Tállara';
+
+      const act = DATA.actividades.find(a => a.slug === id);
+      if (!act) {
+        page.innerHTML = `
+          <div class="detail-hero">
+            <div class="container detail-hero-content">
+              <a href="index.html" class="detail-back">&larr; ${T[lang].detail_back}</a>
+              <h1 class="detail-title">${lang === 'gl' ? 'Actividade non atopada' : 'Actividad no encontrada'}</h1>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const d = act[lang];
+      const det = d.detail;
+      document.title = d.name + ' – San Roquiño';
+
+      // ── Info cards (date, time, place, price) ──
+      let infoCardsHtml = '';
+      if (det.infoCards) {
+        infoCardsHtml = `<div class="nd-sections-grid act-info-grid">` +
+          det.infoCards.map(c => `
+            <div class="act-info-card">
+              <span class="act-info-icon">${c.icon}</span>
+              <p class="act-info-label">${c.label}</p>
+              <p class="act-info-value">${c.value}</p>
+            </div>`).join('') +
+        `</div>`;
+      } else if (det.when || det.where) {
+        infoCardsHtml = `<div class="nd-sections-grid act-info-grid">
+          ${det.when ? `<div class="act-info-card"><span class="act-info-icon">📅</span><p class="act-info-label">${T[lang].detail_when}</p><p class="act-info-value">${det.when}</p></div>` : ''}
+          ${det.where ? `<div class="act-info-card"><span class="act-info-icon">📍</span><p class="act-info-label">${T[lang].detail_where}</p><p class="act-info-value">${det.where}</p></div>` : ''}
+        </div>`;
+      }
+
+      // ── Activities / features ──
+      let activitiesHtml = '';
+      if (det.activities) {
+        activitiesHtml = `
+          <div class="nd-block">
+            <div class="nd-block-header">
+              <span class="nd-block-icon">✨</span>
+              <h3 class="nd-block-title">${det.activities_title || T[lang].detail_includes}</h3>
+            </div>
+            <div class="act-activities-grid">
+              ${det.activities.map(a => `
+                <div class="act-activity-item">
+                  <span class="act-activity-icon">${a.icon}</span>
+                  <p>${a.text}</p>
+                </div>`).join('')}
+            </div>
+          </div>`;
+      } else if (det.features) {
+        activitiesHtml = `
+          <div class="nd-block">
+            <div class="nd-block-header">
+              <span class="nd-block-icon">✨</span>
+              <h3 class="nd-block-title">${T[lang].detail_includes}</h3>
+            </div>
+            <ul class="nd-checklist">
+              ${det.features.map(f => `<li><span class="nd-check">✓</span><span>${f}</span></li>`).join('')}
+            </ul>
+          </div>`;
+      }
+
+      // ── Programa das festas (solo para festas-san-roquino) ──
+      let programaHtml = '';
+      if (act.slug === 'festas-san-roquino') {
+        const TIPO_CONFIG = {
+          gaitas:     { color: '#1a5c2a', bg: '#e8f5ec', icon: '🎶' },
+          vermu:      { color: '#92400e', bg: '#fef3c7', icon: '🥂' },
+          orquestra:  { color: '#1e3a8a', bg: '#dbeafe', icon: '🎵' },
+          relixioso:  { color: '#6b21a8', bg: '#f3e8ff', icon: '⛪' },
+          infantil:   { color: '#b45309', bg: '#fef9c3', icon: '🎠' },
+          tradicional:{ color: '#065f46', bg: '#d1fae5', icon: '🔥' },
+          comida:     { color: '#9a3412', bg: '#ffedd5', icon: '🍽️' },
+          deporte:    { color: '#1d4ed8', bg: '#dbeafe', icon: '🎯' },
+          familia:    { color: '#7c3aed', bg: '#ede9fe', icon: '👨‍👩‍👧' },
+        };
+
+        function buildDiaCards(dias) {
+          return dias.map(d => `
+            <div class="dia-card-new">
+              <div class="dia-card-head">
+                <div class="dia-numero-wrap">
+                  <span class="dia-numero">${d.numero}</span>
+                  <div class="dia-meta">
+                    <span class="dia-nombre-new">${d[lang].dia}</span>
+                    ${d[lang].santo ? `<span class="dia-santo">${d[lang].santo}</span>` : ''}
+                  </div>
+                </div>
+                <span class="dia-fecha-tag">${d['fecha_' + lang]}</span>
+              </div>
+              <div class="dia-eventos-list">
+                ${d.eventos.map(e => {
+                  const cfg = TIPO_CONFIG[e.tipo] || TIPO_CONFIG.orquestra;
+                  const tipoLabel = T[lang]['festas_tipo_' + e.tipo] || e.tipo;
+                  return `
+                  <div class="evento-new">
+                    <span class="evento-hora-new">${e.hora}</span>
+                    <div class="evento-body">
+                      <span class="evento-tipo-badge" style="background:${cfg.bg};color:${cfg.color}">
+                        ${cfg.icon} ${tipoLabel}
+                      </span>
+                      <p class="evento-nombre-new">${e[lang].nombre}</p>
+                      <p class="evento-lugar-new">📍 ${e[lang].lugar}</p>
+                    </div>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>`).join('');
+        }
+
+        if (DATA.festas_confirmed && DATA.programa.length) {
+          programaHtml = `
+            <div class="nd-block">
+              <div class="nd-block-header">
+                <span class="nd-block-icon">📋</span>
+                <h3 class="nd-block-title">${lang === 'gl' ? 'Programa ' + DATA.festas_year : 'Programa ' + DATA.festas_year}</h3>
+              </div>
+              <div class="programa-grid-new">${buildDiaCards(DATA.programa)}</div>
+            </div>`;
+        } else if (DATA.programa_anterior && DATA.programa_anterior.length) {
+          programaHtml = `
+            <div class="nd-block">
+              <div class="nd-block-header">
+                <span class="nd-block-icon">📋</span>
+                <h3 class="nd-block-title">${lang === 'gl' ? 'Programa' : 'Programa'}</h3>
+              </div>
+              <div class="programa-pending-banner" style="margin-bottom:1.5rem">
+                <span class="programa-pending-icon">🎉</span>
+                <div>
+                  <p class="programa-pending-title">${lang === 'gl'
+                    ? 'O programa de ' + DATA.festas_year + ' estará dispoñible en breve'
+                    : 'El programa de ' + DATA.festas_year + ' estará disponible pronto'}</p>
+                </div>
+              </div>
+              <div class="programa-anterior-wrap">
+                <div class="programa-anterior-header">
+                  <span class="programa-anterior-badge">${T[lang].festas_anterior_label} · ${DATA.programa_anterior_year}</span>
+                </div>
+                <div class="programa-grid-new">${buildDiaCards(DATA.programa_anterior)}</div>
+              </div>
+            </div>`;
+        }
+      }
+
+      // ── Registration block ──
+      let registrationHtml = '';
+      if (det.registration) {
+        const r = det.registration;
+        registrationHtml = `
+          <div class="nd-block nd-block-dark" id="inscripcion-phones">
+            <div class="nd-block-header">
+              <span class="nd-block-icon">📋</span>
+              <h3 class="nd-block-title">${r.title}</h3>
+            </div>
+            <div class="act-registration-body">
+              ${r.deadline ? `
+                <div class="act-reg-row">
+                  <span class="act-reg-icon">⏳</span>
+                  <div>
+                    <p class="act-reg-label">${T[lang].detail_deadline}</p>
+                    <p class="act-reg-value">${r.deadline}</p>
+                  </div>
+                </div>` : ''}
+              ${r.phones && r.phones.length ? `
+                <div class="act-reg-row">
+                  <span class="act-reg-icon">📱</span>
+                  <div>
+                    <p class="act-reg-label">${T[lang].detail_contact}</p>
+                    <div class="act-phones">
+                      ${r.phones.map(p => `<a href="tel:${p.replace(/\s/g,'')}" class="act-phone-btn">${p}</a>`).join('')}
+                    </div>
+                  </div>
+                </div>` : ''}
+            </div>
+          </div>`;
+      }
+
+      // ── Closing message ──
+      const closingHtml = det.closing ? `
+        <div class="nd-closing">
+          <span class="nd-closing-icon">🌟</span>
+          <p>${det.closing}</p>
+        </div>` : '';
+
+      page.innerHTML = `
+        <div class="detail-hero">
+          <div class="container detail-hero-content">
+            <a href="index.html#actividades" class="detail-back">&larr; ${T[lang].detail_back}</a>
+            ${det.badge ? `<span class="act-badge">${det.badge}</span>` : ''}
+            <p class="detail-season">${d.season}</p>
+            <h1 class="detail-title">${d.name}</h1>
+            <div class="detail-title-line"></div>
+          </div>
+        </div>
+        <div class="container nd-body">
+          <div class="nd-intro-band">
+            <p class="nd-intro-text">${det.intro}</p>
+          </div>
+          ${infoCardsHtml}
+          ${activitiesHtml}
+          ${programaHtml}
+          ${registrationHtml}
+          <div id="inscripcion-online"></div>
+          ${closingHtml}
+          <a href="index.html#actividades" class="btn btn-outline detail-cta">&larr; ${T[lang].detail_back}</a>
+        </div>`;
+      if (typeof checkAndRenderInscripcion === 'function') {
+        checkAndRenderInscripcion(id, lang);
+      }
+    }
+
+    renderDetail();
+    applyLang();
+
+    document.getElementById('langToggle').addEventListener('click', () => {
+      lang = lang === 'gl' ? 'es' : 'gl';
+      localStorage.setItem('sr-lang', lang);
+      applyLang();
+      renderDetail();
+    });
+  </script>
+</body>
+</html>

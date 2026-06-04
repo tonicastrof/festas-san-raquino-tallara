@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="gl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comisión de Festas de San Roquiño de Tállara</title>
+  <meta name="description" content="Comisión de Festas de San Roquiño de Tállara, Lousame. Festas, A Aldea de Papa Noel, Ruta Nocturna e moito máis.">
+  <meta property="og:title" content="Festas de San Roquiño de Tállara">
+  <meta property="og:description" content="Comisión de Festas de San Roquiño de Tállara · Lousame · A Coruña">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="#inicio" class="nav-logo">
+        <img class="nav-logo-icon" src="img/logoweb.jpg" alt="San Roquiño">
+        <span class="nav-logo-text">San Roquiño</span>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#novidades" data-i18n="nav_novidades">Novidades</a>
+        <a href="#actividades" data-i18n="nav_actividades">Actividades</a>
+        <a href="#festas" data-i18n="nav_festas">Festas</a>
+        <a href="#patrocinadores" data-i18n="nav_patrocinadores">Patrocinadores</a>
+        <a href="#localizacion" data-i18n="nav_localizacion">Localización</a>
+        <a href="#contacto" data-i18n="nav_contacto">Contacto</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="lang-btn" id="langToggle" aria-label="Cambiar idioma">ES</button>
+        <button class="nav-burger" id="navBurger" aria-label="Menú" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── HERO CAROUSEL ── -->
+  <section class="hero-carousel" id="inicio">
+    <div class="hero-carousel-bg" aria-hidden="true">
+      <div class="hero-shape hero-shape-1"></div>
+      <div class="hero-shape hero-shape-2"></div>
+      <div class="hero-shape hero-shape-3"></div>
+    </div>
+    <div class="carousel-track" id="carouselTrack"></div>
+    <div class="carousel-controls">
+      <button class="carousel-arrow carousel-prev" id="carouselPrev" aria-label="Anterior">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="carousel-dots" id="carouselDots"></div>
+      <button class="carousel-arrow carousel-next" id="carouselNext" aria-label="Seguinte">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div class="carousel-progress" id="carouselProgress"></div>
+    <button class="carousel-pause" id="carouselPause" aria-label="Pausar">
+      <svg id="pauseIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <svg id="playIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    </button>
+  </section>
+
+  <!-- ── NOVIDADES ── -->
+  <section class="section reveal" id="novidades">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag" data-i18n="novidades_tag">Novidades</span>
+        <h2 class="section-title" data-i18n="novidades_title">O que está a pasar</h2>
+      </div>
+      <div class="cards-grid" id="novidadesGrid"></div>
+    </div>
+  </section>
+
+  <!-- ── ACTIVIDADES ── -->
+  <section class="section section-alt reveal" id="actividades">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag" data-i18n="actividades_tag">Durante o ano</span>
+        <h2 class="section-title" data-i18n="actividades_title">As nosas actividades</h2>
+      </div>
+      <div class="cards-grid cards-grid-3" id="actividadesGrid"></div>
+    </div>
+  </section>
+
+  <!-- ── FESTAS ── -->
+  <section class="section reveal" id="festas">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag" id="festasDatesTag"></span>
+        <h2 class="section-title" data-i18n="festas_title">Programa de Festas</h2>
+        <p class="section-note" id="festasNote"></p>
+      </div>
+      <div class="programa-grid" id="programaGrid"></div>
+    </div>
+  </section>
+
+  <!-- ── PATROCINADORES ── -->
+  <section class="section section-alt reveal" id="patrocinadores">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag" data-i18n="patrocinadores_tag">Colaboran con nós</span>
+        <h2 class="section-title" data-i18n="patrocinadores_title">Patrocinadores</h2>
+      </div>
+      <div class="sponsors-grid" id="sponsorsGrid"></div>
+      <div class="sponsors-cta">
+        <p data-i18n="patrocinadores_cta_text">¿Queres colaborar coa comisión?</p>
+        <a href="#contacto" class="btn btn-outline" data-i18n="patrocinadores_cta_btn">Contacta con nós</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LOCALIZACIÓN ── -->
+  <section class="section reveal" id="localizacion">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag" data-i18n="localizacion_tag">Onde estamos</span>
+        <h2 class="section-title" data-i18n="localizacion_title">Localización</h2>
+      </div>
+      <div class="map-wrapper">
+        <div id="map"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONTACTO ── -->
+  <section class="section section-alt reveal" id="contacto">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag" data-i18n="contacto_tag">Contacto</span>
+        <h2 class="section-title" data-i18n="contacto_title">Contacta con nós</h2>
+      </div>
+      <div class="contacto-grid">
+        <div class="contacto-info">
+          <p class="contacto-sub" data-i18n="contacto_sub">Envíanos unha mensaxe e responderemos o antes posible.</p>
+          <div class="contacto-social" id="contactoSocialLinks"></div>
+        </div>
+        <form id="contactoForm" class="contacto-form" novalidate>
+          <div class="form-row contacto-row">
+            <div class="form-group">
+              <label for="c-nome" data-i18n="contacto_nome">Nome *</label>
+              <input type="text" id="c-nome" required>
+            </div>
+            <div class="form-group">
+              <label for="c-email" data-i18n="contacto_email">Correo electrónico *</label>
+              <input type="email" id="c-email" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="c-telefono" data-i18n="contacto_telefono">Teléfono</label>
+            <input type="tel" id="c-telefono">
+          </div>
+          <div class="form-group">
+            <label for="c-mensaxe" data-i18n="contacto_mensaxe">Mensaxe *</label>
+            <textarea id="c-mensaxe" rows="4" required></textarea>
+          </div>
+          <div id="c-msg" class="form-message" aria-live="polite"></div>
+          <button type="submit" class="btn btn-verde contacto-submit" id="c-btn" data-i18n="contacto_submit">Enviar mensaxe</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img class="footer-logo-icon" src="img/logoweb.jpg" alt="San Roquiño">
+        <p class="footer-name" data-i18n="footer_name">Comisión de Festas de San Roquiño de Tállara</p>
+        <p class="footer-location">Tállara · Lousame · A Coruña</p>
+      </div>
+
+      <div class="footer-social" id="socialLinks"></div>
+
+      <p class="footer-copy" id="footerCopy"></p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

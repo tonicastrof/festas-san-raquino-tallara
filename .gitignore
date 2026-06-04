@@ -1,0 +1,10 @@
+# Memoria local de Claude Code (contén credenciais)
+.claude/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+*.swp

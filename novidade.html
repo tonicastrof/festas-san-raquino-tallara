@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="gl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novidade – San Roquiño</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img class="nav-logo-icon" src="img/logoweb.jpg" alt="San Roquiño">
+        <span class="nav-logo-text">San Roquiño</span>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html#novidades" data-i18n="nav_novidades">Novidades</a>
+        <a href="index.html#actividades" data-i18n="nav_actividades">Actividades</a>
+        <a href="index.html#festas" data-i18n="nav_festas">Festas</a>
+        <a href="index.html#patrocinadores" data-i18n="nav_patrocinadores">Patrocinadores</a>
+        <a href="index.html#localizacion" data-i18n="nav_localizacion">Localización</a>
+        <a href="index.html#contacto" data-i18n="nav_contacto">Contacto</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="lang-btn" id="langToggle" aria-label="Cambiar idioma">ES</button>
+        <button class="nav-burger" id="navBurger" aria-label="Menú" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── DETAIL CONTENT ── -->
+  <main class="detail-page" id="detailPage">
+    <!-- Rendered by JS -->
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img class="footer-logo-icon" src="img/logoweb.jpg" alt="San Roquiño">
+        <p class="footer-name" data-i18n="footer_name">Comisión de Festas de San Roquiño de Tállara</p>
+        <p class="footer-location">Tállara · Lousame · A Coruña</p>
+      </div>
+      <p class="footer-copy" id="footerCopy"></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    /* ── Mobile nav ── */
+    const burger   = document.getElementById('navBurger');
+    const navLinks = document.getElementById('navLinks');
+
+    burger.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      burger.classList.toggle('open', isOpen);
+      burger.setAttribute('aria-expanded', isOpen);
+    });
+
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        burger.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    /* ── Render novidade detail ── */
+    function renderDetail() {
+      const id   = window.location.hash.slice(1);
+      const page = document.getElementById('detailPage');
+      const copy = document.getElementById('footerCopy');
+
+      if (copy) copy.textContent = '© ' + new Date().getFullYear() + ' Comisión de Festas de San Roquiño de Tállara';
+
+      const nov = DATA.novidades.find(n => n.slug === id);
+      if (!nov) {
+        page.innerHTML = `
+          <div class="detail-hero">
+            <div class="container detail-hero-content">
+              <a href="index.html" class="detail-back">&larr; ${T[lang].detail_back}</a>
+              <h1 class="detail-title">${lang === 'gl' ? 'Novidade non atopada' : 'Novedad no encontrada'}</h1>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const d = nov[lang];
+      const det = d.detail;
+      document.title = d.title + ' – San Roquiño';
+
+      // ── Info cards ──
+      let infoCardsHtml = '';
+      if (det.infoCards) {
+        infoCardsHtml = `<div class="nd-sections-grid act-info-grid">` +
+          det.infoCards.map(c => `
+            <div class="act-info-card">
+              <span class="act-info-icon">${c.icon}</span>
+              <p class="act-info-label">${c.label}</p>
+              <p class="act-info-value">${c.value}</p>
+            </div>`).join('') +
+        `</div>`;
+      }
+
+      // ── Sections – each section can have its own icon or fall back to defaults ──
+      const sectionIconsFallback = ['🎨','🗳️','📅','📌','✨','🔔'];
+      let sectionsHtml = '';
+      if (det.sections) {
+        sectionsHtml = `<div class="nd-sections-grid">` +
+          det.sections.map((s, i) => `
+            <div class="nd-section-card">
+              <span class="nd-section-icon">${s.icon || sectionIconsFallback[i] || '📌'}</span>
+              <h3 class="nd-section-title">${s.title}</h3>
+              <p class="nd-section-text">${s.content}</p>
+            </div>
+          `).join('') +
+        `</div>`;
+      }
+
+      // ── Requisitos ──
+      let requisitosHtml = '';
+      if (det.requisitos) {
+        requisitosHtml = `
+          <div class="nd-block">
+            <div class="nd-block-header">
+              <span class="nd-block-icon">📋</span>
+              <h3 class="nd-block-title">${det.requisitos_title}</h3>
+            </div>
+            <ul class="nd-checklist">
+              ${det.requisitos.map(r => `
+                <li>
+                  <span class="nd-check">✓</span>
+                  <span>${r}</span>
+                </li>`).join('')}
+            </ul>
+          </div>`;
+      }
+
+      // ── Onde entregar ──
+      const entregaIcons = ['👥','🏪','✂️'];
+      let entregaHtml = '';
+      if (det.entrega) {
+        entregaHtml = `
+          <div class="nd-block nd-block-dark">
+            <div class="nd-block-header">
+              <span class="nd-block-icon">📬</span>
+              <h3 class="nd-block-title">${det.entrega_title}</h3>
+            </div>
+            <div class="nd-entrega-grid">
+              ${det.entrega.map((e, i) => `
+                <div class="nd-entrega-card">
+                  <span class="nd-entrega-icon">${entregaIcons[i] || '📍'}</span>
+                  <p>${e}</p>
+                </div>`).join('')}
+            </div>
+          </div>`;
+      }
+
+      // ── Form ──
+      let formHtml = '';
+      if (nov.hasForm) {
+        formHtml = `
+          <div class="form-section">
+            <div class="form-header">
+              <h3 class="detail-section-title">${T[lang].form_title}</h3>
+              <p class="form-subtitle">${T[lang].form_subtitle}</p>
+            </div>
+            <form id="debuxoForm" class="debuxo-form" novalidate>
+              <div class="form-group">
+                <label for="formName">${T[lang].form_name} *</label>
+                <input type="text" id="formName" name="name" required autocomplete="name">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="formPhone">${T[lang].form_phone} *</label>
+                  <input type="tel" id="formPhone" name="phone" required autocomplete="tel">
+                </div>
+                <div class="form-group">
+                  <label for="formEmail">${T[lang].form_email} *</label>
+                  <input type="email" id="formEmail" name="email" required autocomplete="email">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="formFile">${T[lang].form_file} *</label>
+                <div class="file-upload" id="fileUploadArea">
+                  <input type="file" id="formFile" name="debuxo" accept="image/*,.pdf" required>
+                  <div class="file-upload-content">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--verde)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span class="file-upload-label" id="fileLabel">${T[lang].form_file_help}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-message" id="formMessage"></div>
+              <button type="submit" class="btn btn-ouro form-submit">${T[lang].form_submit}</button>
+            </form>
+          </div>`;
+      }
+
+      page.innerHTML = `
+        <div class="detail-hero">
+          <div class="container detail-hero-content">
+            <a href="index.html#novidades" class="detail-back">&larr; ${T[lang].detail_back}</a>
+            <p class="detail-season">${d.date}</p>
+            <h1 class="detail-title">${d.title}</h1>
+            <div class="detail-title-line"></div>
+          </div>
+        </div>
+        <div class="container nd-body">
+          <div class="nd-intro-band">
+            <p class="nd-intro-text">${det.intro}</p>
+          </div>
+          ${infoCardsHtml}
+          ${sectionsHtml}
+          ${requisitosHtml}
+          ${entregaHtml}
+          ${formHtml}
+          <div id="inscripcion-online"></div>
+          ${det.closing ? `
+            <div class="nd-closing">
+              <span class="nd-closing-icon">🌈</span>
+              <p>${det.closing}</p>
+            </div>` : ''}
+          <a href="index.html#novidades" class="btn btn-outline detail-cta">&larr; ${T[lang].detail_back}</a>
+        </div>`;
+
+      if (nov.hasForm) initForm();
+      if (nov.eventoSlug && typeof checkAndRenderInscripcion === 'function') {
+        checkAndRenderInscripcion(nov.eventoSlug, lang);
+      }
+    }
+
+    function initForm() {
+      const form = document.getElementById('debuxoForm');
+      const fileInput = document.getElementById('formFile');
+      const fileLabel = document.getElementById('fileLabel');
+      const msg = document.getElementById('formMessage');
+      if (!form) return;
+
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+          const f = fileInput.files[0];
+          const sizeMB = (f.size / 1024 / 1024).toFixed(1);
+          fileLabel.textContent = f.name + ' (' + sizeMB + ' MB)';
+          fileLabel.closest('.file-upload').classList.add('has-file');
+        } else {
+          fileLabel.textContent = T[lang].form_file_help;
+          fileLabel.closest('.file-upload').classList.remove('has-file');
+        }
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        msg.textContent = '';
+        msg.className = 'form-message';
+
+        const name  = form.name.value.trim();
+        const phone = form.phone.value.trim();
+        const email = form.email.value.trim();
+        const file  = fileInput.files[0];
+
+        if (!name || !phone || !email || !file) {
+          msg.textContent = T[lang].form_required;
+          msg.classList.add('form-message-error');
+          return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+          msg.textContent = lang === 'gl'
+            ? 'O arquivo é demasiado grande. Máximo 10 MB.'
+            : 'El archivo es demasiado grande. Máximo 10 MB.';
+          msg.classList.add('form-message-error');
+          return;
+        }
+
+        // TODO: Enviar por email (integración futura)
+        // Por agora, mostramos mensaxe de éxito
+        msg.textContent = T[lang].form_success;
+        msg.classList.add('form-message-success');
+        form.reset();
+        fileLabel.textContent = T[lang].form_file_help;
+        fileLabel.closest('.file-upload').classList.remove('has-file');
+      });
+    }
+
+    renderDetail();
+    applyLang();
+
+    document.getElementById('langToggle').addEventListener('click', () => {
+      lang = lang === 'gl' ? 'es' : 'gl';
+      localStorage.setItem('sr-lang', lang);
+      applyLang();
+      renderDetail();
+    });
+  </script>
+</body>
+</html>

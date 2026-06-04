@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="gl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin · San Roquiño</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --verde:   #1a5c2a;
+      --verde-m: #2d7a3e;
+      --ouro:    #c8a840;
+      --escuro:  #111827;
+      --gris:    #6b7280;
+      --gris-c:  #e5e7eb;
+      --r:       12px;
+      --rsm:     8px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',system-ui,sans-serif; background:#f3f4f6; color:var(--escuro); min-height:100vh; }
+
+    /* ── Login ── */
+    #loginScreen {
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(135deg, var(--verde) 0%, #0d3d17 100%); padding:1rem;
+    }
+    .login-card {
+      background:#fff; border-radius:20px; padding:2.5rem 2rem;
+      width:100%; max-width:360px; text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    }
+    .login-logo  { width:72px; height:72px; border-radius:50%; margin:0 auto 1rem; object-fit:cover; }
+    .login-title { font-size:1.5rem; font-weight:700; color:var(--verde); margin-bottom:.25rem; }
+    .login-sub   { font-size:.875rem; color:var(--gris); margin-bottom:2rem; }
+    .login-form  { display:flex; flex-direction:column; gap:.875rem; }
+    .login-input {
+      width:100%; padding:.75rem 1rem; border:1.5px solid var(--gris-c);
+      border-radius:var(--rsm); font-size:1.0625rem; font-family:inherit;
+      outline:none; transition:border-color .2s; text-align:center; letter-spacing:.2em;
+    }
+    .login-input:focus { border-color:var(--verde); }
+    .login-error {
+      font-size:.875rem; color:#dc2626; background:#fef2f2;
+      border:1px solid #fecaca; border-radius:var(--rsm); padding:.625rem .875rem; display:none;
+    }
+    .login-btn {
+      background:var(--verde); color:#fff; border:none; border-radius:var(--rsm);
+      padding:.875rem; font-size:1rem; font-weight:600; cursor:pointer;
+      font-family:inherit; transition:background .2s;
+    }
+    .login-btn:hover    { background:var(--verde-m); }
+    .login-btn:disabled { opacity:.6; cursor:not-allowed; }
+
+    /* ── Panel ── */
+    #adminPanel { display:none; min-height:100vh; }
+
+    .adm-header {
+      background:var(--verde); color:#fff; padding:0 1.5rem; height:60px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+    .adm-header-left { display:flex; align-items:center; gap:.75rem; }
+    .adm-header-logo { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+    .adm-header-title { font-weight:700; font-size:1rem; }
+    .adm-header-sub   { font-size:.75rem; opacity:.75; }
+    .logout-btn {
+      background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.3);
+      border-radius:var(--rsm); padding:.4rem .875rem; font-size:.875rem;
+      font-weight:500; cursor:pointer; font-family:inherit; transition:background .2s;
+    }
+    .logout-btn:hover { background:rgba(255,255,255,.25); }
+
+    .adm-main { max-width:1200px; margin:0 auto; padding:1.5rem; }
+
+    /* Stats */
+    .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:1.5rem; }
+    .stat-card  { background:#fff; border-radius:var(--r); padding:1rem; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .stat-value { font-size:1.75rem; font-weight:700; color:var(--verde); line-height:1; margin-bottom:.25rem; }
+    .stat-label { font-size:.7rem; color:var(--gris); text-transform:uppercase; letter-spacing:.05em; }
+
+    /* Filters */
+    .filters-bar {
+      background:#fff; border-radius:var(--r); padding:1rem 1.25rem;
+      margin-bottom:1rem; display:flex; align-items:center; gap:.875rem;
+      flex-wrap:wrap; box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .filter-select {
+      padding:.5rem .75rem; border:1.5px solid var(--gris-c); border-radius:var(--rsm);
+      font-size:.875rem; font-family:inherit; outline:none; cursor:pointer; background:#fff;
+    }
+    .filter-select:focus { border-color:var(--verde); }
+    .status-tabs { display:flex; gap:.375rem; }
+    .stab {
+      padding:.375rem .875rem; border:1.5px solid var(--gris-c); border-radius:99px;
+      font-size:.8rem; font-weight:500; cursor:pointer; background:#fff;
+      font-family:inherit; color:var(--gris); transition:all .15s;
+    }
+    .stab:hover  { border-color:var(--verde); color:var(--verde); }
+    .stab.active { background:var(--verde); border-color:var(--verde); color:#fff; }
+
+    .export-btn {
+      margin-left:auto; background:var(--ouro); color:#fff; border:none;
+      border-radius:var(--rsm); padding:.5rem 1rem; font-size:.875rem;
+      font-weight:600; cursor:pointer; font-family:inherit; transition:opacity .2s;
+    }
+    .export-btn:hover { opacity:.85; }
+
+    /* Table */
+    .table-wrapper { background:#fff; border-radius:var(--r); box-shadow:0 1px 4px rgba(0,0,0,.06); overflow:hidden; }
+    .table-msg     { padding:3rem; text-align:center; color:var(--gris); font-size:.9375rem; }
+
+    .ins-table { width:100%; border-collapse:collapse; font-size:.875rem; }
+    .ins-table thead { background:#f9fafb; border-bottom:1.5px solid var(--gris-c); }
+    .ins-table th {
+      padding:.75rem 1rem; text-align:left; font-weight:600; color:var(--gris);
+      font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap;
+    }
+    .ins-table td { padding:.875rem 1rem; border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+    .ins-table tr:last-child td { border-bottom:none; }
+    .ins-table tr:hover td { background:#f9fafb; }
+
+    .td-nome { font-weight:600; }
+    .td-num  { text-align:center; font-weight:700; color:var(--verde); }
+    .td-date { color:var(--gris); white-space:nowrap; font-size:.8rem; }
+
+    .badge            { display:inline-flex; align-items:center; padding:.25rem .625rem; border-radius:99px; font-size:.75rem; font-weight:600; white-space:nowrap; }
+    .badge-pendente   { background:#fef3c7; color:#92400e; }
+    .badge-confirmada { background:#d1fae5; color:#065f46; }
+    .badge-cancelada  { background:#fee2e2; color:#991b1b; }
+    .badge-lida       { background:#f3f4f6; color:var(--gris); }
+    .badge-nolida     { background:#dbeafe; color:#1e40af; font-weight:700; }
+
+    .actions { display:flex; gap:.375rem; white-space:nowrap; flex-wrap:wrap; }
+    .abtn {
+      padding:.3rem .625rem; border-radius:var(--rsm); font-size:.75rem;
+      font-weight:600; cursor:pointer; font-family:inherit; border:none; transition:opacity .15s;
+    }
+    .abtn:hover    { opacity:.8; }
+    .abtn:disabled { opacity:.35; cursor:not-allowed; }
+    .abtn-ok    { background:#d1fae5; color:#065f46; }
+    .abtn-ko    { background:#fee2e2; color:#991b1b; }
+    .abtn-undo  { background:#f3f4f6; color:var(--gris); }
+    .abtn-reply { background:#eff6ff; color:#1d4ed8; }
+
+    a[href^="tel:"],
+    a[href^="mailto:"] { color:inherit; text-decoration:none; }
+    a[href^="tel:"]:hover,
+    a[href^="mailto:"]:hover { text-decoration:underline; }
+
+    .badge-count {
+      display:inline-flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,0.25); color:inherit;
+      border-radius:99px; font-size:.7rem; font-weight:700;
+      min-width:18px; height:18px; padding:0 5px; margin-left:4px;
+    }
+    .stab.active .badge-count { background:rgba(255,255,255,0.3); }
+    .badge-count:empty { display:none; }
+
+    .msg-text {
+      max-width:240px; white-space:nowrap; overflow:hidden;
+      text-overflow:ellipsis; color:var(--gris); font-size:.8rem;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      backdrop-filter:blur(4px); display:flex; align-items:center;
+      justify-content:center; z-index:500; padding:1rem;
+    }
+    .modal-card {
+      background:#fff; border-radius:var(--r); width:100%; max-width:580px;
+      box-shadow:0 20px 60px rgba(0,0,0,.25); display:flex; flex-direction:column; max-height:90vh;
+    }
+    .modal-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1.25rem 1.5rem; border-bottom:1px solid var(--gris-c);
+    }
+    .modal-title { font-size:1.1rem; font-weight:700; }
+    .modal-close {
+      background:none; border:none; font-size:1.25rem; cursor:pointer;
+      color:var(--gris); line-height:1; padding:.25rem;
+    }
+    .modal-close:hover { color:var(--escuro); }
+    .modal-body {
+      padding:1.5rem; overflow-y:auto; display:flex; flex-direction:column; gap:1rem;
+    }
+    .modal-field { display:flex; flex-direction:column; gap:.375rem; }
+    .modal-field label { font-size:.875rem; font-weight:600; color:var(--escuro); }
+    .modal-field input,
+    .modal-field textarea {
+      padding:.625rem .875rem; border:1.5px solid var(--gris-c);
+      border-radius:var(--rsm); font-size:.9375rem; font-family:inherit;
+      outline:none; transition:border-color .15s; color:var(--escuro);
+    }
+    .modal-field input:focus,
+    .modal-field textarea:focus { border-color:var(--verde); }
+    .modal-field input[readonly] { background:#f9fafb; color:var(--gris); cursor:default; }
+    .modal-field textarea { resize:vertical; min-height:160px; line-height:1.6; }
+    .modal-footer {
+      padding:1rem 1.5rem; border-top:1px solid var(--gris-c);
+      display:flex; gap:.75rem; justify-content:flex-end;
+    }
+    .modal-msg {
+      font-size:.875rem; padding:.625rem .875rem; border-radius:var(--rsm);
+      display:none;
+    }
+    .modal-msg-ok  { background:#d1fae5; color:#065f46; display:block; }
+    .modal-msg-err { background:#fee2e2; color:#991b1b; display:block; }
+    .modal-warn {
+      font-size:.8rem; background:#fef3c7; color:#92400e;
+      border:1px solid #fde68a; border-radius:var(--rsm);
+      padding:.5rem .875rem;
+    }
+
+    @media (max-width:768px) {
+      .stats-grid { grid-template-columns:repeat(3,1fr); }
+      .adm-main   { padding:1rem; }
+      .table-wrapper { overflow-x:auto; }
+      .ins-table  { min-width:700px; }
+      .export-btn { margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOGIN ── -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <img class="login-logo" src="img/logoweb.jpg" alt="San Roquiño">
+      <h1 class="login-title">Panel Admin</h1>
+      <p class="login-sub">Comisión de Festas · San Roquiño</p>
+      <form class="login-form" id="loginForm">
+        <input class="login-input" type="password" id="loginPin"
+          placeholder="••••••••" required autocomplete="current-password" autofocus>
+        <div class="login-error" id="loginError"></div>
+        <button class="login-btn" type="submit" id="loginBtn">Acceder</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── ADMIN ── -->
+  <div id="adminPanel">
+    <header class="adm-header">
+      <div class="adm-header-left">
+        <img class="adm-header-logo" src="img/logoweb.jpg" alt="San Roquiño">
+        <div>
+          <div class="adm-header-title">Panel Admin</div>
+          <div class="adm-header-sub" id="userEmail"></div>
+        </div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Saír</button>
+    </header>
+
+    <main class="adm-main">
+
+      <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;">
+        <button class="stab active" id="tabInscripcions" onclick="switchTab('inscripcions')">
+          📋 Inscricións <span id="badgeInscripcions" class="badge-count"></span>
+        </button>
+        <button class="stab" id="tabMensaxes" onclick="switchTab('mensaxes')">
+          ✉️ Mensaxes <span id="badgeMensaxes" class="badge-count"></span>
+        </button>
+      </div>
+
+      <!-- ── INSCRICIÓNS ── -->
+      <div id="viewInscripcions">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value" id="sTotal">—</div><div class="stat-label">Total</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#92400e" id="sPend">—</div><div class="stat-label">Pendentes</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#065f46" id="sConf">—</div><div class="stat-label">Confirmadas</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#991b1b" id="sCanc">—</div><div class="stat-label">Canceladas</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#1d4ed8" id="sPers">—</div><div class="stat-label">Persoas</div></div>
+        </div>
+
+        <div class="filters-bar">
+          <select class="filter-select" id="eventoFilter">
+            <option value="">Todos os eventos</option>
+          </select>
+          <div class="status-tabs" id="statusTabs">
+            <button class="stab active" data-s="">Todos</button>
+            <button class="stab" data-s="pendente">Pendentes</button>
+            <button class="stab" data-s="confirmada">Confirmadas</button>
+            <button class="stab" data-s="cancelada">Canceladas</button>
+          </div>
+          <button class="export-btn" id="exportBtn">↓ Exportar CSV</button>
+        </div>
+
+        <div class="table-wrapper" id="tableWrapper">
+          <div class="table-msg">Cargando inscricións…</div>
+        </div>
+      </div>
+
+      <!-- ── MENSAXES ── -->
+      <div id="viewMensaxes" style="display:none">
+        <div class="table-wrapper" id="mensaxesWrapper">
+          <div class="table-msg">Cargando mensaxes…</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── MODAL RESPOSTA ── -->
+  <div class="modal-overlay" id="replyModal" style="display:none">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">✉️ Contestar</span>
+        <button class="modal-close" id="modalClose" aria-label="Pechar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="emailjsWarn" class="modal-warn" style="display:none">
+          ⚠ EmailJS non está configurado aínda. Cando teñas o Gmail da comisión, configura
+          <code>EMAILJS_SERVICE_ID</code>, <code>EMAILJS_TEMPLATE_ID</code> e <code>EMAILJS_PUBLIC_KEY</code>
+          no código de <code>admin.html</code>.
+        </div>
+        <div class="modal-field">
+          <label>Para</label>
+          <input type="email" id="replyTo" readonly>
+        </div>
+        <div class="modal-field">
+          <label>Asunto</label>
+          <input type="text" id="replySubject">
+        </div>
+        <div class="modal-field">
+          <label>Mensaxe</label>
+          <textarea id="replyBody"></textarea>
+        </div>
+        <div class="modal-msg" id="replyMsg"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="abtn abtn-undo" id="modalCancelBtn">Cancelar</button>
+        <button class="abtn abtn-reply" id="modalSendBtn" style="font-size:.875rem;padding:.5rem 1rem">
+          ↗ Enviar email
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    /* ── Config ─────────────────────────────────────────────────────────── */
+    const SUPABASE_URL      = 'https://zeromwbdhtchfppulqcu.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplcm9td2JkaHRjaGZwcHVscWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODk3MDMsImV4cCI6MjA5NjE2NTcwM30.sWyJGJac_MMT8uqTGJ0SxYwS7BYr67lD47hd5wQKH5M';
+    const ADMIN_EMAIL       = 'comision@sanroquino.gal';
+
+    /* ── EmailJS — substituír cando teñas o Gmail da comisión ───────────── */
+    /* Instrucións: emailjs.com → Add Email Service (Gmail) → Create Template */
+    /* Template vars: {{to_email}}, {{subject}}, {{message}}, {{from_name}}  */
+    const EMAILJS_PUBLIC_KEY  = 'PENDENTE_CONFIGURAR';  // Account → General → Public Key
+    const EMAILJS_SERVICE_ID  = 'PENDENTE_CONFIGURAR';  // Email Services → Service ID
+    const EMAILJS_TEMPLATE_ID = 'PENDENTE_CONFIGURAR';  // Email Templates → Template ID
+
+    const emailjsReady = !EMAILJS_PUBLIC_KEY.startsWith('PENDENTE');
+    if (emailjsReady) emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allData    = [];
+    let eventosMap = {};
+    let curEvento  = '';
+    let curStatus  = '';
+
+    /* ── Auth ───────────────────────────────────────────────────────────── */
+    sb.auth.onAuthStateChange((_, session) => {
+      if (session) {
+        document.getElementById('userEmail').textContent = session.user.email;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display  = 'block';
+        loadData();
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('adminPanel').style.display  = 'none';
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('loginError');
+      const pin = document.getElementById('loginPin').value;
+
+      btn.disabled = true; btn.textContent = 'Accedendo…';
+      err.style.display = 'none';
+
+      const { error } = await sb.auth.signInWithPassword({ email: ADMIN_EMAIL, password: pin });
+      if (error) {
+        err.textContent = 'PIN incorrecto. Inténtao de novo.';
+        err.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Acceder';
+        document.getElementById('loginPin').value = '';
+        document.getElementById('loginPin').focus();
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => sb.auth.signOut());
+
+    /* ── Data ───────────────────────────────────────────────────────────── */
+    async function loadData() {
+      const { data: evs } = await sb.from('eventos').select('id,slug,gl_nome').order('fecha');
+      if (evs) {
+        eventosMap = {};
+        const sel  = document.getElementById('eventoFilter');
+        sel.innerHTML = '<option value="">Todos os eventos</option>';
+        evs.forEach(ev => {
+          eventosMap[ev.id] = ev.gl_nome || ev.slug;
+          const o = document.createElement('option');
+          o.value = ev.id; o.textContent = ev.gl_nome || ev.slug;
+          sel.appendChild(o);
+        });
+      }
+      const { data, error } = await sb
+        .from('inscripciones')
+        .select('id,nome,telefono,email,num_personas,estado,created_at,evento_id')
+        .order('created_at', { ascending: false });
+      if (!error) { allData = data || []; render(); updateBadges(); }
+    }
+
+    /* ── Render inscricións ─────────────────────────────────────────────── */
+    function filtered() {
+      return allData.filter(i =>
+        (!curEvento || String(i.evento_id) === String(curEvento)) &&
+        (!curStatus || i.estado === curStatus)
+      );
+    }
+    function forStats() {
+      return allData.filter(i => !curEvento || String(i.evento_id) === String(curEvento));
+    }
+
+    function render() {
+      const fs   = forStats();
+      document.getElementById('sTotal').textContent = fs.length;
+      document.getElementById('sPend').textContent  = fs.filter(i => i.estado === 'pendente').length;
+      document.getElementById('sConf').textContent  = fs.filter(i => i.estado === 'confirmada').length;
+      document.getElementById('sCanc').textContent  = fs.filter(i => i.estado === 'cancelada').length;
+      document.getElementById('sPers').textContent  = fs.reduce((s,i) => s + (i.num_personas||0), 0);
+
+      const rows = filtered();
+      const wrap = document.getElementById('tableWrapper');
+
+      if (!rows.length) {
+        wrap.innerHTML = '<div class="table-msg">Non hai inscricións para este filtro.</div>';
+        return;
+      }
+
+      wrap.innerHTML = `
+        <table class="ins-table">
+          <thead><tr>
+            <th>Nome</th><th>Teléfono</th><th>Email</th>
+            <th style="text-align:center">Persoas</th>
+            <th>Evento</th><th>Data</th><th>Estado</th><th>Accións</th>
+          </tr></thead>
+          <tbody>${rows.map(rowInsc).join('')}</tbody>
+        </table>`;
+
+      wrap.querySelectorAll('.abtn-estado[data-id]').forEach(b =>
+        b.addEventListener('click', () => updateEstado(+b.dataset.id, b.dataset.a))
+      );
+      wrap.querySelectorAll('.abtn-reply[data-id]').forEach(b =>
+        b.addEventListener('click', () => replyToInscripcion(allData.find(i => i.id === +b.dataset.id)))
+      );
+    }
+
+    function rowInsc(i) {
+      const date   = new Date(i.created_at).toLocaleDateString('gl', {day:'2-digit',month:'2-digit',year:'2-digit'});
+      const evento = eventosMap[i.evento_id] || '—';
+      const badges = { pendente:'badge-pendente', confirmada:'badge-confirmada', cancelada:'badge-cancelada' };
+      const labels = { pendente:'Pendente', confirmada:'Confirmada', cancelada:'Cancelada' };
+      return `<tr>
+        <td class="td-nome">${x(i.nome)}</td>
+        <td><a href="tel:${x(i.telefono)}">${x(i.telefono)}</a></td>
+        <td>${i.email ? `<a href="mailto:${x(i.email)}">${x(i.email)}</a>` : '<span style="color:#9ca3af">—</span>'}</td>
+        <td class="td-num">${i.num_personas}</td>
+        <td>${x(evento)}</td>
+        <td class="td-date">${date}</td>
+        <td><span class="badge ${badges[i.estado]||''}">${labels[i.estado]||i.estado}</span></td>
+        <td><div class="actions">
+          <button class="abtn abtn-ok    abtn-estado" data-id="${i.id}" data-a="confirmada" ${i.estado==='confirmada'?'disabled':''}>✓ Confirmar</button>
+          <button class="abtn abtn-ko    abtn-estado" data-id="${i.id}" data-a="cancelada"  ${i.estado==='cancelada' ?'disabled':''}>✕ Cancelar</button>
+          ${i.estado!=='pendente'?`<button class="abtn abtn-undo abtn-estado" data-id="${i.id}" data-a="pendente">↩ Pendente</button>`:''}
+          ${i.email?`<button class="abtn abtn-reply" data-id="${i.id}">✉ Contestar</button>`:''}
+        </div></td>
+      </tr>`;
+    }
+
+    function x(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Update estado ──────────────────────────────────────────────────── */
+    async function updateEstado(id, estado) {
+      const { error } = await sb.from('inscripciones').update({ estado }).eq('id', id);
+      if (!error) {
+        const i = allData.find(r => r.id === id);
+        if (i) i.estado = estado;
+        render(); updateBadges();
+      }
+    }
+
+    /* ── Filters ────────────────────────────────────────────────────────── */
+    document.getElementById('eventoFilter').addEventListener('change', e => {
+      curEvento = e.target.value; render();
+    });
+    document.getElementById('statusTabs').addEventListener('click', e => {
+      const t = e.target.closest('.stab');
+      if (!t) return;
+      document.querySelectorAll('#statusTabs .stab').forEach(s => s.classList.remove('active'));
+      t.classList.add('active');
+      curStatus = t.dataset.s;
+      render();
+    });
+
+    /* ── Export CSV ─────────────────────────────────────────────────────── */
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const rows = filtered();
+      const hdrs = ['Nome','Teléfono','Email','Persoas','Evento','Estado','Data'];
+      const body = rows.map(i => [
+        i.nome, i.telefono, i.email||'', i.num_personas,
+        eventosMap[i.evento_id]||'', i.estado,
+        new Date(i.created_at).toLocaleDateString('gl'),
+      ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+      const csv  = [hdrs.join(','), ...body].join('\r\n');
+      const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8;' });
+      const a    = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(blob),
+        download: `inscripcions-${curEvento?(eventosMap[curEvento]||'evento'):'todos'}-${new Date().toISOString().slice(0,10)}.csv`,
+      });
+      a.click(); URL.revokeObjectURL(a.href);
+    });
+
+    /* ── Tabs ───────────────────────────────────────────────────────────── */
+    function switchTab(tab) {
+      document.getElementById('viewInscripcions').style.display = tab === 'inscripcions' ? 'block' : 'none';
+      document.getElementById('viewMensaxes').style.display     = tab === 'mensaxes'     ? 'block' : 'none';
+      document.getElementById('tabInscripcions').classList.toggle('active', tab === 'inscripcions');
+      document.getElementById('tabMensaxes').classList.toggle('active',     tab === 'mensaxes');
+      if (tab === 'mensaxes' && !mensaxesLoaded) loadMensaxes();
+    }
+
+    /* ── Mensaxes ───────────────────────────────────────────────────────── */
+    let allMensaxes    = [];
+    let mensaxesLoaded = false;
+
+    async function loadMensaxes() {
+      const { data, error } = await sb
+        .from('contacto_mensaxes')
+        .select('id,nome,email,telefono,mensaxe,lido,created_at')
+        .order('created_at', { ascending: false });
+      if (!error) {
+        allMensaxes = data || []; mensaxesLoaded = true;
+        renderMensaxes(); updateBadges();
+      }
+    }
+
+    function updateBadges() {
+      document.getElementById('badgeMensaxes').textContent     = allMensaxes.filter(m => !m.lido).length  || '';
+      document.getElementById('badgeInscripcions').textContent = allData.filter(i => i.estado==='pendente').length || '';
+    }
+
+    function renderMensaxes() {
+      const wrap = document.getElementById('mensaxesWrapper');
+      if (!allMensaxes.length) {
+        wrap.innerHTML = '<div class="table-msg">Non hai mensaxes de contacto.</div>';
+        return;
+      }
+      wrap.innerHTML = `
+        <table class="ins-table">
+          <thead><tr>
+            <th>Nome</th><th>Email</th><th>Teléfono</th>
+            <th>Mensaxe</th><th>Data</th><th>Estado</th><th>Accións</th>
+          </tr></thead>
+          <tbody>${allMensaxes.map(rowMsg).join('')}</tbody>
+        </table>`;
+
+      wrap.querySelectorAll('.abtn-lido[data-id]').forEach(b =>
+        b.addEventListener('click', () => updateLido(+b.dataset.id, b.dataset.lido === 'true'))
+      );
+      wrap.querySelectorAll('.abtn-reply[data-id]').forEach(b =>
+        b.addEventListener('click', () => replyToMensaxe(allMensaxes.find(m => m.id === +b.dataset.id)))
+      );
+    }
+
+    function rowMsg(m) {
+      const date  = new Date(m.created_at).toLocaleDateString('gl', {day:'2-digit',month:'2-digit',year:'2-digit'});
+      const badge = m.lido
+        ? '<span class="badge badge-lida">Lida</span>'
+        : '<span class="badge badge-nolida">Non lida</span>';
+      const lidoBtn = m.lido
+        ? `<button class="abtn abtn-undo abtn-lido" data-id="${m.id}" data-lido="false">↩ Non lida</button>`
+        : `<button class="abtn abtn-ok   abtn-lido" data-id="${m.id}" data-lido="true" >✓ Lida</button>`;
+      return `<tr style="${m.lido?'':'font-weight:600;'}">
+        <td class="td-nome">${x(m.nome)}</td>
+        <td><a href="mailto:${x(m.email)}">${x(m.email)}</a></td>
+        <td>${m.telefono?`<a href="tel:${x(m.telefono)}">${x(m.telefono)}</a>`:'<span style="color:#9ca3af">—</span>'}</td>
+        <td><div class="msg-text" title="${x(m.mensaxe)}">${x(m.mensaxe)}</div></td>
+        <td class="td-date">${date}</td>
+        <td>${badge}</td>
+        <td><div class="actions">
+          ${lidoBtn}
+          <button class="abtn abtn-reply" data-id="${m.id}">✉ Contestar</button>
+        </div></td>
+      </tr>`;
+    }
+
+    async function updateLido(id, lido) {
+      const { error } = await sb.from('contacto_mensaxes').update({ lido }).eq('id', id);
+      if (!error) {
+        const m = allMensaxes.find(r => r.id === id);
+        if (m) m.lido = lido;
+        renderMensaxes(); updateBadges();
+      }
+    }
+
+    /* ── Modal de resposta ──────────────────────────────────────────────── */
+    function openReply(to, subject, body) {
+      document.getElementById('replyTo').value      = to;
+      document.getElementById('replySubject').value = subject;
+      document.getElementById('replyBody').value    = body;
+      document.getElementById('replyMsg').className = 'modal-msg';
+      document.getElementById('replyMsg').textContent = '';
+      document.getElementById('emailjsWarn').style.display = emailjsReady ? 'none' : 'block';
+      document.getElementById('modalSendBtn').disabled = false;
+      document.getElementById('modalSendBtn').textContent = '↗ Enviar email';
+      document.getElementById('replyModal').style.display = 'flex';
+    }
+
+    function closeReply() {
+      document.getElementById('replyModal').style.display = 'none';
+    }
+
+    document.getElementById('modalClose').addEventListener('click', closeReply);
+    document.getElementById('modalCancelBtn').addEventListener('click', closeReply);
+    document.getElementById('replyModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('replyModal')) closeReply();
+    });
+
+    document.getElementById('modalSendBtn').addEventListener('click', async () => {
+      const btn  = document.getElementById('modalSendBtn');
+      const msg  = document.getElementById('replyMsg');
+      const to   = document.getElementById('replyTo').value;
+      const subj = document.getElementById('replySubject').value.trim();
+      const body = document.getElementById('replyBody').value.trim();
+
+      if (!subj || !body) {
+        msg.className = 'modal-msg modal-msg-err';
+        msg.textContent = 'Enche o asunto e a mensaxe antes de enviar.';
+        return;
+      }
+
+      if (!emailjsReady) {
+        msg.className = 'modal-msg modal-msg-err';
+        msg.textContent = 'EmailJS non configurado. Configura as 3 variables no código.';
+        return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Enviando…';
+      msg.className = 'modal-msg'; msg.textContent = '';
+
+      try {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          to_email:  to,
+          subject:   subj,
+          message:   body,
+          from_name: 'Comisión de Festas de San Roquiño',
+        });
+        msg.className = 'modal-msg modal-msg-ok';
+        msg.textContent = '✓ Email enviado correctamente!';
+        setTimeout(closeReply, 2000);
+      } catch(e) {
+        msg.className = 'modal-msg modal-msg-err';
+        msg.textContent = 'Erro ao enviar: ' + (e.text || e.message || JSON.stringify(e));
+        btn.disabled = false; btn.textContent = '↗ Enviar email';
+      }
+    });
+
+    /* ── Templates de resposta ──────────────────────────────────────────── */
+    function replyToInscripcion(i) {
+      if (!i || !i.email) return;
+      const evento = eventosMap[i.evento_id] || 'o evento';
+      openReply(
+        i.email,
+        `Sobre a túa inscrición — ${evento}`,
+        `Ola ${i.nome},\n\nGrazas por inscribirte en ${evento}.\n\n[Escribe aquí a túa mensaxe]\n\nUn saúdo,\nComisión de Festas de San Roquiño de Tállara`
+      );
+    }
+
+    function replyToMensaxe(m) {
+      if (!m) return;
+      openReply(
+        m.email,
+        `Re: Contacto — Comisión de Festas de San Roquiño`,
+        `Ola ${m.nome},\n\nGrazas polo teu contacto.\n\n[Escribe aquí a túa resposta]\n\nUn saúdo,\nComisión de Festas de San Roquiño de Tállara`
+      );
+    }
+  </script>
+</body>
+</html>
