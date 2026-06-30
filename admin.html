@@ -800,7 +800,7 @@
       wrap.innerHTML = `
         <table class="ins-table">
           <thead><tr>
-            <th>Código</th><th>Participantes</th><th>Teléfono</th>
+            <th>Código</th><th>Participantes</th><th>Teléfono</th><th>Email</th>
             <th style="text-align:center">Persoas</th><th style="text-align:center">Importe</th>
             <th>Comprobante</th><th>Data</th><th>Estado</th><th>Accións</th>
           </tr></thead>
@@ -809,6 +809,18 @@
 
       wrap.querySelectorAll('.abtn-ruta-estado[data-id]').forEach(b =>
         b.addEventListener('click', () => updateRutaEstado(+b.dataset.id, b.dataset.a))
+      );
+      wrap.querySelectorAll('.abtn-ruta-reply[data-id]').forEach(b =>
+        b.addEventListener('click', () => {
+          const r = allRuta.find(i => i.id === +b.dataset.id);
+          if (!r || !r.email_contacto) return;
+          const firstPart = (r.participantes && r.participantes[0]) ? r.participantes[0].nome : '';
+          openReply(
+            r.email_contacto,
+            `Sobre a túa inscrición na Ruta Nocturna — ${r.codigo}`,
+            `Ola ${firstPart},\n\nGrazas por inscribirte na Ruta Nocturna 2026.\n\n[Escribe aquí a túa mensaxe]`
+          );
+        })
       );
     }
 
@@ -831,6 +843,7 @@
         <td><strong style="font-family:monospace;letter-spacing:.05em">${x(r.codigo)}</strong></td>
         <td style="font-size:.8rem;line-height:1.5">${parts || '—'}</td>
         <td><a href="tel:${x(r.telefono_contacto)}">${x(r.telefono_contacto)}</a></td>
+        <td style="font-size:.8rem">${r.email_contacto ? `<a href="mailto:${x(r.email_contacto)}">${x(r.email_contacto)}</a>` : '<span style="color:#9ca3af">—</span>'}</td>
         <td class="td-num">${r.total_persoas}</td>
         <td class="td-num">${r.total_euros} €</td>
         <td>${compLink}</td>
@@ -840,6 +853,7 @@
           <button class="abtn abtn-ok  abtn-ruta-estado" data-id="${r.id}" data-a="confirmada" ${r.estado==='confirmada'?'disabled':''}>✓ Confirmar</button>
           <button class="abtn abtn-ko  abtn-ruta-estado" data-id="${r.id}" data-a="cancelada"  ${r.estado==='cancelada' ?'disabled':''}>✕ Cancelar</button>
           ${r.estado!=='pendente_pago'?`<button class="abtn abtn-undo abtn-ruta-estado" data-id="${r.id}" data-a="pendente_pago">↩ Pendente</button>`:''}
+          ${r.email_contacto?`<button class="abtn abtn-reply abtn-ruta-reply" data-id="${r.id}">✉ Contestar</button>`:''}
         </div></td>
       </tr>`;
     }
@@ -864,11 +878,11 @@
 
     document.getElementById('exportRutaBtn').addEventListener('click', () => {
       const rows = filteredRuta();
-      const hdrs = ['Código','Participantes','DNIs','Teléfono','Persoas','Importe','Estado','Comprobante','Data'];
+      const hdrs = ['Código','Participantes','DNIs','Teléfono','Email','Persoas','Importe','Estado','Comprobante','Data'];
       const body = rows.map(r => {
         const nomes = (r.participantes||[]).map(p => p.nome+' '+p.apelidos).join('; ');
         const dnis  = (r.participantes||[]).map(p => p.dni).join('; ');
-        return [r.codigo, nomes, dnis, r.telefono_contacto, r.total_persoas, r.total_euros+'€',
+        return [r.codigo, nomes, dnis, r.telefono_contacto, r.email_contacto||'', r.total_persoas, r.total_euros+'€',
                 r.estado, r.comprobante_url||'', new Date(r.created_at).toLocaleDateString('gl')]
           .map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
       });
