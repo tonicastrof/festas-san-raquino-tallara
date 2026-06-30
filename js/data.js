@@ -59,7 +59,7 @@ const DATA = {
     {
       slug: "ruta-nocturna-2026",
       emoji: "🌙",
-      image: "img/ruta-nocturna.jpg",
+      image: "img/ruta-nocturna.png",
       hasRutaForm: true,
       gl: {
         date:  "Setembro 2026",
