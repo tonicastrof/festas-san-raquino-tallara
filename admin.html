@@ -355,7 +355,7 @@
         <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
           <div class="stat-card"><div class="stat-value" id="rTotal">—</div><div class="stat-label">Total</div></div>
           <div class="stat-card"><div class="stat-value" style="color:#92400e" id="rPendPago">—</div><div class="stat-label">Pend. Pago</div></div>
-          <div class="stat-card"><div class="stat-value" style="color:#1e40af" id="rComprobante">—</div><div class="stat-label">Comprobante</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#1e40af" id="rComprobante">—</div><div class="stat-label">Pend. Aceptar</div></div>
           <div class="stat-card"><div class="stat-value" style="color:#065f46" id="rConfirmada">—</div><div class="stat-label">Confirmadas</div></div>
         </div>
 
@@ -363,7 +363,7 @@
           <div class="status-tabs" id="rutaStatusTabs">
             <button class="stab active" data-s="">Todos</button>
             <button class="stab" data-s="pendente_pago">Pend. Pago</button>
-            <button class="stab" data-s="comprobante_enviado">Comprobante</button>
+            <button class="stab" data-s="comprobante_enviado">Pend. Aceptar</button>
             <button class="stab" data-s="confirmada">Confirmadas</button>
             <button class="stab" data-s="cancelada">Canceladas</button>
           </div>
@@ -819,7 +819,7 @@
         confirmada:'badge-confirmada', cancelada:'badge-cancelada'
       };
       const labels = {
-        pendente_pago:'Pend. Pago', comprobante_enviado:'Comprobante',
+        pendente_pago:'Pend. Pago', comprobante_enviado:'Pend. Aceptar',
         confirmada:'Confirmada', cancelada:'Cancelada'
       };
       const parts = (r.participantes || []).map(p => `${x(p.nome)} ${x(p.apelidos)} (${x(p.dni)})`).join('<br>');

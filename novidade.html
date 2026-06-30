@@ -342,9 +342,7 @@
       const t = T[lg];
       const isOpen = DATA.ruta_inscripcions_open;
       const precio = DATA.ruta_precio_persona || 10;
-      const iban   = DATA.ruta_iban || '';
 
-      // Check section (always visible)
       const checkHtml = `
         <div class="ruta-check-section">
           <h3>${t.ruta_check_title}</h3>
@@ -371,6 +369,21 @@
             <p>${t.ruta_form_sub}</p>
           </div>
           <form id="rutaForm" novalidate>
+            <div class="ruta-participant-card" style="border-color:var(--verde);border-width:2px">
+              <div class="ruta-participant-label">
+                <span>${t.ruta_contact_title}</span>
+              </div>
+              <div class="ruta-fields-grid">
+                <div class="ruta-field">
+                  <label>${t.ruta_telefono} *</label>
+                  <input type="tel" id="rutaContactTel" required>
+                </div>
+                <div class="ruta-field">
+                  <label>${t.ruta_email} *</label>
+                  <input type="email" id="rutaContactEmail" required>
+                </div>
+              </div>
+            </div>
             <div id="rutaParticipants"></div>
             <button type="button" class="ruta-add-btn" id="rutaAddBtn">${t.ruta_add_person}</button>
             <div class="ruta-total-bar">
@@ -408,10 +421,6 @@
               <label>${t.ruta_dni} *</label>
               <input type="text" data-field="dni" required>
             </div>
-            <div class="ruta-field">
-              <label>${t.ruta_telefono} *</label>
-              <input type="tel" data-field="telefono" required>
-            </div>
           </div>`;
         document.getElementById('rutaParticipants').appendChild(card);
 
@@ -421,12 +430,12 @@
       }
 
       function updateTotal() {
-        const n = document.querySelectorAll('.ruta-participant-card').length;
+        const n = document.querySelectorAll('#rutaParticipants .ruta-participant-card').length;
         document.getElementById('rutaTotal').textContent = (n * precio) + ' €';
       }
 
       function renumber() {
-        document.querySelectorAll('.ruta-participant-card').forEach((c, i) => {
+        document.querySelectorAll('#rutaParticipants .ruta-participant-card').forEach((c, i) => {
           c.querySelector('.ruta-participant-label span').textContent = t.ruta_persona + ' ' + (i + 1);
         });
       }
@@ -440,7 +449,16 @@
         msg.className = 'ruta-form-msg';
         msg.textContent = '';
 
-        const cards = document.querySelectorAll('.ruta-participant-card');
+        const tel   = document.getElementById('rutaContactTel').value.trim();
+        const email = document.getElementById('rutaContactEmail').value.trim();
+
+        if (!tel || !email) {
+          msg.className = 'ruta-form-msg ruta-form-msg-error';
+          msg.textContent = t.ruta_required;
+          return;
+        }
+
+        const cards = document.querySelectorAll('#rutaParticipants .ruta-participant-card');
         const participantes = [];
         let valid = true;
 
@@ -450,6 +468,7 @@
             p[inp.dataset.field] = inp.value.trim();
             if (!p[inp.dataset.field]) valid = false;
           });
+          p.telefono = tel;
           participantes.push(p);
         });
 
@@ -463,8 +482,7 @@
         btn.disabled = true;
         btn.textContent = t.ruta_sending;
 
-        const tel = participantes[0].telefono;
-        const { data, error } = await submitRutaInscripcion(participantes, tel, null);
+        const { data, error } = await submitRutaInscripcion(participantes, tel, email);
 
         if (error) {
           msg.className = 'ruta-form-msg ruta-form-msg-error';
@@ -478,6 +496,74 @@
       });
 
       initRutaCheck(lg);
+    }
+
+    function buildUploadHtml(t) {
+      return `
+        <div class="ruta-upload-section">
+          <label>${t.ruta_upload_label}</label>
+          <div class="ruta-upload-row">
+            <div class="file-upload" style="flex:1;min-width:200px">
+              <input type="file" class="ruta-comprobante-file" accept=".pdf">
+              <div class="file-upload-content">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--verde)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="file-upload-label ruta-file-label">${t.ruta_upload_help}</span>
+              </div>
+            </div>
+            <button class="btn btn-ouro btn-sm ruta-upload-btn">${t.ruta_upload_btn}</button>
+          </div>
+          <div class="ruta-upload-msg"></div>
+        </div>`;
+    }
+
+    function initUploadHandlers(container, inscripcionId, codigo, lg) {
+      const t = T[lg];
+      const fileInput = container.querySelector('.ruta-comprobante-file');
+      const fileLabel = container.querySelector('.ruta-file-label');
+      const btn       = container.querySelector('.ruta-upload-btn');
+      const msg       = container.querySelector('.ruta-upload-msg');
+      if (!fileInput || !btn) return;
+
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+          const f = fileInput.files[0];
+          fileLabel.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
+          fileLabel.closest('.file-upload').classList.add('has-file');
+        } else {
+          fileLabel.textContent = t.ruta_upload_help;
+          fileLabel.closest('.file-upload').classList.remove('has-file');
+        }
+      });
+
+      btn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024) {
+          msg.className = 'ruta-upload-msg ruta-upload-msg-err';
+          msg.textContent = lg === 'gl' ? 'O arquivo é demasiado grande (máx. 10 MB).' : 'El archivo es demasiado grande (máx. 10 MB).';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = lg === 'gl' ? 'Enviando...' : 'Enviando...';
+        msg.className = 'ruta-upload-msg';
+        msg.textContent = '';
+
+        const { error } = await uploadRutaComprobante(inscripcionId, codigo, file);
+
+        if (error) {
+          msg.className = 'ruta-upload-msg ruta-upload-msg-err';
+          msg.textContent = t.ruta_upload_error;
+          btn.disabled = false;
+          btn.textContent = t.ruta_upload_btn;
+        } else {
+          msg.className = 'ruta-upload-msg ruta-upload-msg-ok';
+          msg.textContent = t.ruta_upload_success;
+          btn.style.display = 'none';
+          fileInput.closest('.file-upload').style.display = 'none';
+        }
+      });
     }
 
     function showRutaSuccess(data, lg) {
@@ -498,66 +584,9 @@
             <span class="ruta-iban-display">${DATA.ruta_iban}</span>
             <span class="ruta-iban-note">${t.ruta_success_iban_note}</span>
           </div>
-          <div class="ruta-upload-section">
-            <label>${t.ruta_upload_label}</label>
-            <div class="ruta-upload-row">
-              <div class="file-upload" style="flex:1;min-width:200px">
-                <input type="file" id="rutaComprobanteFile" accept=".pdf">
-                <div class="file-upload-content">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--verde)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span class="file-upload-label" id="rutaFileLabel">${t.ruta_upload_help}</span>
-                </div>
-              </div>
-              <button class="btn btn-ouro btn-sm" id="rutaUploadBtn">${t.ruta_upload_btn}</button>
-            </div>
-            <div class="ruta-upload-msg" id="rutaUploadMsg"></div>
-          </div>
+          ${buildUploadHtml(t)}
         </div>`;
-
-      const fileInput = document.getElementById('rutaComprobanteFile');
-      const fileLabel = document.getElementById('rutaFileLabel');
-
-      fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) {
-          const f = fileInput.files[0];
-          fileLabel.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
-          fileLabel.closest('.file-upload').classList.add('has-file');
-        } else {
-          fileLabel.textContent = t.ruta_upload_help;
-          fileLabel.closest('.file-upload').classList.remove('has-file');
-        }
-      });
-
-      document.getElementById('rutaUploadBtn').addEventListener('click', async () => {
-        const btn = document.getElementById('rutaUploadBtn');
-        const msg = document.getElementById('rutaUploadMsg');
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        if (file.size > 10 * 1024 * 1024) {
-          msg.className = 'ruta-upload-msg ruta-upload-msg-err';
-          msg.textContent = lg === 'gl' ? 'O arquivo é demasiado grande (máx. 10 MB).' : 'El archivo es demasiado grande (máx. 10 MB).';
-          return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = lg === 'gl' ? 'Enviando...' : 'Enviando...';
-        msg.className = 'ruta-upload-msg';
-        msg.textContent = '';
-
-        const { error } = await uploadRutaComprobante(data.id, data.codigo, file);
-
-        if (error) {
-          msg.className = 'ruta-upload-msg ruta-upload-msg-err';
-          msg.textContent = t.ruta_upload_error;
-          btn.disabled = false;
-          btn.textContent = t.ruta_upload_btn;
-        } else {
-          msg.className = 'ruta-upload-msg ruta-upload-msg-ok';
-          msg.textContent = t.ruta_upload_success;
-          btn.style.display = 'none';
-        }
-      });
+      initUploadHandlers(section, data.id, data.codigo, lg);
     }
 
     function initRutaCheck(lg) {
@@ -569,7 +598,7 @@
       async function doCheck() {
         const q = input.value.trim();
         if (!q) return;
-        const result = document.getElementById('rutaCheckResult');
+        const resultEl = document.getElementById('rutaCheckResult');
         btn.disabled = true;
         btn.textContent = '...';
 
@@ -579,7 +608,7 @@
         btn.textContent = t.ruta_check_btn;
 
         if (!data) {
-          result.innerHTML = `<p style="color:#b91c1c;font-size:0.9rem;margin-top:0.75rem">${t.ruta_check_not_found}</p>`;
+          resultEl.innerHTML = `<p style="color:#b91c1c;font-size:0.9rem;margin-top:0.75rem">${t.ruta_check_not_found}</p>`;
           return;
         }
 
@@ -588,7 +617,9 @@
         const badgeClass = 'ruta-badge-' + data.estado;
         const partList = (data.participantes || []).map(p => `<li>${p.nome} ${p.apelidos} — ${p.dni}</li>`).join('');
 
-        result.innerHTML = `
+        const showPayment = data.estado === 'pendente_pago';
+
+        resultEl.innerHTML = `
           <div class="ruta-status-card" style="margin-top:0.75rem">
             <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
               <span class="ruta-status-badge ${badgeClass}">${statusText}</span>
@@ -605,12 +636,18 @@
               <span class="ruta-info-label">${t.ruta_status_people} (${data.total_persoas})</span>
               <ul style="margin:0;padding-left:1.25rem;font-size:0.9rem;color:var(--escuro)">${partList}</ul>
             </div>
-            ${data.estado === 'pendente_pago' && DATA.ruta_inscripcions_open ? `
+            ${showPayment ? `
               <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--gris-claro)">
                 <p style="font-size:0.85rem;color:var(--gris);margin-bottom:0.5rem">${t.ruta_success_iban}</p>
                 <span class="ruta-iban-display">${DATA.ruta_iban}</span>
-              </div>` : ''}
+                <p class="ruta-iban-note">${t.ruta_success_iban_note}</p>
+              </div>
+              ${buildUploadHtml(t)}` : ''}
           </div>`;
+
+        if (showPayment) {
+          initUploadHandlers(resultEl, data.id, data.codigo, lg);
+        }
       }
 
       btn.addEventListener('click', doCheck);
