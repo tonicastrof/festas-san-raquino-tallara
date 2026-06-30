@@ -1999,3 +1999,384 @@ a.novidade-card {
 @media (max-width: 768px) {
   .contacto-grid { grid-template-columns: 1fr; gap: 1.5rem; }
 }
+
+/* ── Ruta Nocturna — Formulario de inscrición ── */
+.ruta-form-section {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--ouro);
+}
+
+.ruta-form-header { margin-bottom: 1.5rem; }
+
+.ruta-form-header h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.4rem;
+  color: var(--escuro);
+  margin-bottom: 0.4rem;
+}
+
+.ruta-form-header p {
+  font-size: 0.9rem;
+  color: var(--gris);
+}
+
+.ruta-participant-card {
+  background: var(--branco);
+  border: 1.5px solid var(--gris-claro);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+  transition: border-color var(--ease);
+}
+
+.ruta-participant-card:focus-within {
+  border-color: var(--verde);
+}
+
+.ruta-participant-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--gris-claro);
+}
+
+.ruta-participant-label span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--verde);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ruta-remove-btn {
+  background: none;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--ease);
+}
+
+.ruta-remove-btn:hover {
+  background: #fef2f2;
+}
+
+.ruta-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.875rem;
+}
+
+.ruta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ruta-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--escuro);
+}
+
+.ruta-field input {
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--gris-claro);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--escuro);
+  background: #fff;
+  transition: border-color var(--ease), box-shadow var(--ease);
+  outline: none;
+}
+
+.ruta-field input:focus {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(26,92,42,0.1);
+}
+
+.ruta-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--verde-claro);
+  color: var(--verde);
+  border: 1.5px dashed var(--verde);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--ease);
+  margin-bottom: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.ruta-add-btn:hover {
+  background: #d1fae5;
+}
+
+.ruta-total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--verde-claro), #f0f9e8);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  border-left: 4px solid var(--verde);
+}
+
+.ruta-total-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--escuro);
+}
+
+.ruta-total-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--verde);
+}
+
+.ruta-form-msg {
+  font-size: 0.88rem;
+  font-weight: 500;
+  min-height: 1.2em;
+  margin-bottom: 0.75rem;
+}
+
+.ruta-form-msg-error {
+  color: #b91c1c;
+  padding: 0.8rem 1rem;
+  background: #fef2f2;
+  border-radius: var(--radius-sm);
+  border: 1px solid #fecaca;
+}
+
+/* ── Ruta — Resultado de inscrición ── */
+.ruta-success-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--verde);
+}
+
+.ruta-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: var(--verde-claro);
+  border-radius: 50%;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.ruta-success-card h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.4rem;
+  color: var(--verde);
+  margin-bottom: 1.25rem;
+}
+
+.ruta-code-display {
+  display: inline-block;
+  background: var(--escuro);
+  color: var(--ouro-claro);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 0.6rem 1.5rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+  font-family: 'Inter', monospace;
+}
+
+.ruta-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--gris-claro);
+}
+
+.ruta-info-row:last-of-type { border-bottom: none; }
+
+.ruta-info-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gris);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ruta-info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--escuro);
+}
+
+.ruta-iban-display {
+  font-family: 'Inter', monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--verde);
+  letter-spacing: 0.08em;
+}
+
+.ruta-iban-note {
+  font-size: 0.82rem;
+  color: var(--gris);
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+.ruta-upload-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gris-claro);
+}
+
+.ruta-upload-section label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--escuro);
+  margin-bottom: 0.5rem;
+}
+
+.ruta-upload-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.ruta-upload-msg {
+  width: 100%;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.ruta-upload-msg-ok {
+  color: var(--verde);
+  padding: 0.6rem 0.875rem;
+  background: var(--verde-claro);
+  border-radius: var(--radius-sm);
+}
+
+.ruta-upload-msg-err {
+  color: #b91c1c;
+  padding: 0.6rem 0.875rem;
+  background: #fef2f2;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Ruta — Consultar estado ── */
+.ruta-check-section {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--ouro);
+}
+
+.ruta-check-section h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.2rem;
+  color: var(--escuro);
+  margin-bottom: 0.3rem;
+}
+
+.ruta-check-section > p {
+  font-size: 0.88rem;
+  color: var(--gris);
+  margin-bottom: 1rem;
+}
+
+.ruta-check-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ruta-check-row input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.65rem 0.875rem;
+  border: 1.5px solid var(--gris-claro);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--escuro);
+  outline: none;
+  transition: border-color var(--ease);
+}
+
+.ruta-check-row input:focus { border-color: var(--verde); }
+
+.ruta-check-result {
+  margin-top: 1rem;
+}
+
+.ruta-status-card {
+  background: var(--verde-claro);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ruta-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.ruta-badge-pendente_pago     { background: #fef3c7; color: #92400e; }
+.ruta-badge-comprobante_enviado { background: #dbeafe; color: #1e40af; }
+.ruta-badge-confirmada        { background: #d1fae5; color: #065f46; }
+.ruta-badge-cancelada         { background: #fee2e2; color: #991b1b; }
+
+.ruta-closed-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  font-size: 0.95rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.ruta-closed-banner span { font-size: 1.5rem; flex-shrink: 0; }
+
+@media (max-width: 600px) {
+  .ruta-fields-grid { grid-template-columns: 1fr; }
+  .ruta-form-section { padding: 1.5rem; }
+  .ruta-success-card { padding: 1.5rem; }
+  .ruta-check-section { padding: 1.5rem; }
+}

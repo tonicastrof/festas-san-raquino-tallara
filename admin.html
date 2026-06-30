@@ -303,6 +303,9 @@
         <button class="stab" id="tabDebuxos" onclick="switchTab('debuxos')">
           🎨 Debuxos <span id="badgeDebuxos" class="badge-count"></span>
         </button>
+        <button class="stab" id="tabRuta" onclick="switchTab('ruta')">
+          🌙 Ruta Nocturna <span id="badgeRuta" class="badge-count"></span>
+        </button>
       </div>
 
       <!-- ── INSCRICIÓNS ── -->
@@ -344,6 +347,31 @@
       <div id="viewDebuxos" style="display:none">
         <div id="debuxosWrapper">
           <div class="table-msg">Cargando debuxos…</div>
+        </div>
+      </div>
+
+      <!-- ── RUTA NOCTURNA ── -->
+      <div id="viewRuta" style="display:none">
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="stat-card"><div class="stat-value" id="rTotal">—</div><div class="stat-label">Total</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#92400e" id="rPendPago">—</div><div class="stat-label">Pend. Pago</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#1e40af" id="rComprobante">—</div><div class="stat-label">Comprobante</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#065f46" id="rConfirmada">—</div><div class="stat-label">Confirmadas</div></div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="status-tabs" id="rutaStatusTabs">
+            <button class="stab active" data-s="">Todos</button>
+            <button class="stab" data-s="pendente_pago">Pend. Pago</button>
+            <button class="stab" data-s="comprobante_enviado">Comprobante</button>
+            <button class="stab" data-s="confirmada">Confirmadas</button>
+            <button class="stab" data-s="cancelada">Canceladas</button>
+          </div>
+          <button class="export-btn" id="exportRutaBtn">↓ Exportar CSV</button>
+        </div>
+
+        <div class="table-wrapper" id="rutaTableWrapper">
+          <div class="table-msg">Cargando inscricións da ruta…</div>
         </div>
       </div>
 
@@ -583,11 +611,14 @@
       document.getElementById('viewInscripcions').style.display = tab === 'inscripcions' ? 'block' : 'none';
       document.getElementById('viewMensaxes').style.display     = tab === 'mensaxes'     ? 'block' : 'none';
       document.getElementById('viewDebuxos').style.display      = tab === 'debuxos'      ? 'block' : 'none';
+      document.getElementById('viewRuta').style.display         = tab === 'ruta'         ? 'block' : 'none';
       document.getElementById('tabInscripcions').classList.toggle('active', tab === 'inscripcions');
       document.getElementById('tabMensaxes').classList.toggle('active',     tab === 'mensaxes');
       document.getElementById('tabDebuxos').classList.toggle('active',      tab === 'debuxos');
+      document.getElementById('tabRuta').classList.toggle('active',         tab === 'ruta');
       if (tab === 'mensaxes' && !mensaxesLoaded) loadMensaxes();
       if (tab === 'debuxos'  && !debuxosLoaded)  loadDebuxos();
+      if (tab === 'ruta'     && !rutaLoaded)     loadRuta();
     }
 
     /* ── Mensaxes ───────────────────────────────────────────────────────── */
@@ -609,6 +640,7 @@
       document.getElementById('badgeMensaxes').textContent     = allMensaxes.filter(m => !m.lido).length  || '';
       document.getElementById('badgeInscripcions').textContent = allData.filter(i => i.estado==='pendente').length || '';
       document.getElementById('badgeDebuxos').textContent      = allDebuxos.length || '';
+      document.getElementById('badgeRuta').textContent         = allRuta.filter(r => r.estado==='comprobante_enviado' || r.estado==='pendente_pago').length || '';
     }
 
     function renderMensaxes() {
@@ -719,6 +751,135 @@
       lb.addEventListener('click', () => lb.remove());
       document.body.appendChild(lb);
     }
+
+    /* ── Ruta Nocturna ─────────────────────────────────────────────────── */
+    let allRuta     = [];
+    let rutaLoaded  = false;
+    let curRutaStatus = '';
+
+    async function loadRuta() {
+      const { data, error } = await sb
+        .from('ruta_inscripcions')
+        .select('id, codigo, telefono_contacto, email_contacto, total_persoas, total_euros, estado, comprobante_url, created_at')
+        .order('created_at', { ascending: false });
+      if (!error) {
+        allRuta = data || [];
+        rutaLoaded = true;
+
+        for (const r of allRuta) {
+          const { data: parts } = await sb
+            .from('ruta_participantes')
+            .select('nome, apelidos, dni, telefono')
+            .eq('inscripcion_id', r.id);
+          r.participantes = parts || [];
+        }
+
+        renderRuta();
+        updateBadges();
+      }
+    }
+
+    function filteredRuta() {
+      return allRuta.filter(r => !curRutaStatus || r.estado === curRutaStatus);
+    }
+
+    function renderRuta() {
+      document.getElementById('rTotal').textContent      = allRuta.length;
+      document.getElementById('rPendPago').textContent    = allRuta.filter(r => r.estado === 'pendente_pago').length;
+      document.getElementById('rComprobante').textContent = allRuta.filter(r => r.estado === 'comprobante_enviado').length;
+      document.getElementById('rConfirmada').textContent  = allRuta.filter(r => r.estado === 'confirmada').length;
+
+      const rows = filteredRuta();
+      const wrap = document.getElementById('rutaTableWrapper');
+
+      if (!rows.length) {
+        wrap.innerHTML = '<div class="table-msg">Non hai inscricións para este filtro.</div>';
+        return;
+      }
+
+      wrap.innerHTML = `
+        <table class="ins-table">
+          <thead><tr>
+            <th>Código</th><th>Participantes</th><th>Teléfono</th>
+            <th style="text-align:center">Persoas</th><th style="text-align:center">Importe</th>
+            <th>Comprobante</th><th>Data</th><th>Estado</th><th>Accións</th>
+          </tr></thead>
+          <tbody>${rows.map(rowRuta).join('')}</tbody>
+        </table>`;
+
+      wrap.querySelectorAll('.abtn-ruta-estado[data-id]').forEach(b =>
+        b.addEventListener('click', () => updateRutaEstado(+b.dataset.id, b.dataset.a))
+      );
+    }
+
+    function rowRuta(r) {
+      const date   = new Date(r.created_at).toLocaleDateString('gl', {day:'2-digit',month:'2-digit',year:'2-digit'});
+      const badges = {
+        pendente_pago:'badge-pendente', comprobante_enviado:'badge-nolida',
+        confirmada:'badge-confirmada', cancelada:'badge-cancelada'
+      };
+      const labels = {
+        pendente_pago:'Pend. Pago', comprobante_enviado:'Comprobante',
+        confirmada:'Confirmada', cancelada:'Cancelada'
+      };
+      const parts = (r.participantes || []).map(p => `${x(p.nome)} ${x(p.apelidos)} (${x(p.dni)})`).join('<br>');
+      const compLink = r.comprobante_url
+        ? `<a href="${x(r.comprobante_url)}" target="_blank" style="color:#1d4ed8;font-weight:600;font-size:.8rem">📄 Ver PDF</a>`
+        : '<span style="color:#9ca3af">—</span>';
+
+      return `<tr>
+        <td><strong style="font-family:monospace;letter-spacing:.05em">${x(r.codigo)}</strong></td>
+        <td style="font-size:.8rem;line-height:1.5">${parts || '—'}</td>
+        <td><a href="tel:${x(r.telefono_contacto)}">${x(r.telefono_contacto)}</a></td>
+        <td class="td-num">${r.total_persoas}</td>
+        <td class="td-num">${r.total_euros} €</td>
+        <td>${compLink}</td>
+        <td class="td-date">${date}</td>
+        <td><span class="badge ${badges[r.estado]||''}">${labels[r.estado]||r.estado}</span></td>
+        <td><div class="actions">
+          <button class="abtn abtn-ok  abtn-ruta-estado" data-id="${r.id}" data-a="confirmada" ${r.estado==='confirmada'?'disabled':''}>✓ Confirmar</button>
+          <button class="abtn abtn-ko  abtn-ruta-estado" data-id="${r.id}" data-a="cancelada"  ${r.estado==='cancelada' ?'disabled':''}>✕ Cancelar</button>
+          ${r.estado!=='pendente_pago'?`<button class="abtn abtn-undo abtn-ruta-estado" data-id="${r.id}" data-a="pendente_pago">↩ Pendente</button>`:''}
+        </div></td>
+      </tr>`;
+    }
+
+    async function updateRutaEstado(id, estado) {
+      const { error } = await sb.from('ruta_inscripcions').update({ estado }).eq('id', id);
+      if (!error) {
+        const r = allRuta.find(i => i.id === id);
+        if (r) r.estado = estado;
+        renderRuta(); updateBadges();
+      }
+    }
+
+    document.getElementById('rutaStatusTabs').addEventListener('click', e => {
+      const t = e.target.closest('.stab');
+      if (!t) return;
+      document.querySelectorAll('#rutaStatusTabs .stab').forEach(s => s.classList.remove('active'));
+      t.classList.add('active');
+      curRutaStatus = t.dataset.s;
+      renderRuta();
+    });
+
+    document.getElementById('exportRutaBtn').addEventListener('click', () => {
+      const rows = filteredRuta();
+      const hdrs = ['Código','Participantes','DNIs','Teléfono','Persoas','Importe','Estado','Comprobante','Data'];
+      const body = rows.map(r => {
+        const nomes = (r.participantes||[]).map(p => p.nome+' '+p.apelidos).join('; ');
+        const dnis  = (r.participantes||[]).map(p => p.dni).join('; ');
+        return [r.codigo, nomes, dnis, r.telefono_contacto, r.total_persoas, r.total_euros+'€',
+                r.estado, r.comprobante_url||'', new Date(r.created_at).toLocaleDateString('gl')]
+          .map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+      });
+      const csv  = [hdrs.join(','), ...body].join('\r\n');
+      const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8;' });
+      const a    = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(blob),
+        download: `ruta-nocturna-${new Date().toISOString().slice(0,10)}.csv`,
+      });
+      a.click(); URL.revokeObjectURL(a.href);
+    });
 
     /* ── Modal de resposta ──────────────────────────────────────────────── */
     function openReply(to, subject, body) {

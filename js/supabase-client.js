@@ -175,6 +175,114 @@ function initContactoForm() {
   });
 }
 
+/* ── Ruta Nocturna ── */
+function generateRutaCodigo() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return 'RN-' + code;
+}
+
+async function submitRutaInscripcion(participantes, telefonoContacto, emailContacto) {
+  const codigo = generateRutaCodigo();
+  const totalPersonas = participantes.length;
+  const totalEuros = totalPersonas * (DATA.ruta_precio_persona || 10);
+
+  const { data, error } = await sb
+    .from('ruta_inscripcions')
+    .insert([{
+      codigo,
+      telefono_contacto: telefonoContacto,
+      email_contacto: emailContacto || null,
+      total_persoas: totalPersonas,
+      total_euros: totalEuros,
+      estado: 'pendente_pago',
+    }])
+    .select('id, codigo, total_persoas, total_euros')
+    .single();
+
+  if (error) return { data: null, error };
+
+  const parts = participantes.map(p => ({
+    inscripcion_id: data.id,
+    nome: p.nome,
+    apelidos: p.apelidos,
+    dni: p.dni,
+    telefono: p.telefono,
+  }));
+
+  const { error: partError } = await sb.from('ruta_participantes').insert(parts);
+  if (partError) return { data: null, error: partError };
+
+  return { data, error: null };
+}
+
+async function lookupRutaInscripcion(query) {
+  const q = query.trim().toUpperCase();
+
+  let result = await sb
+    .from('ruta_inscripcions')
+    .select('id, codigo, total_persoas, total_euros, estado, comprobante_url, created_at')
+    .eq('codigo', q)
+    .maybeSingle();
+
+  if (result.data) {
+    const { data: parts } = await sb
+      .from('ruta_participantes')
+      .select('nome, apelidos, dni')
+      .eq('inscripcion_id', result.data.id);
+    result.data.participantes = parts || [];
+    return result;
+  }
+
+  const { data: partMatch } = await sb
+    .from('ruta_participantes')
+    .select('inscripcion_id')
+    .ilike('dni', q)
+    .limit(1)
+    .maybeSingle();
+
+  if (partMatch) {
+    result = await sb
+      .from('ruta_inscripcions')
+      .select('id, codigo, total_persoas, total_euros, estado, comprobante_url, created_at')
+      .eq('id', partMatch.inscripcion_id)
+      .single();
+    if (result.data) {
+      const { data: parts } = await sb
+        .from('ruta_participantes')
+        .select('nome, apelidos, dni')
+        .eq('inscripcion_id', result.data.id);
+      result.data.participantes = parts || [];
+    }
+    return result;
+  }
+
+  return { data: null, error: null };
+}
+
+async function uploadRutaComprobante(inscripcionId, codigo, file) {
+  const ext = file.name.split('.').pop();
+  const path = `${codigo}_${Date.now()}.${ext}`;
+
+  const { error: uploadErr } = await sb
+    .storage.from('ruta-comprobantes').upload(path, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (uploadErr) return { error: uploadErr };
+
+  const { data: urlData } = sb.storage.from('ruta-comprobantes').getPublicUrl(path);
+
+  const { error: dbErr } = await sb
+    .from('ruta_inscripcions')
+    .update({ comprobante_url: urlData.publicUrl, estado: 'comprobante_enviado' })
+    .eq('id', inscripcionId);
+
+  return { error: dbErr };
+}
+
 /* ── Punto de entrada principal ── */
 async function checkAndRenderInscripcion(slug, lang) {
   const isGl      = lang === 'gl';

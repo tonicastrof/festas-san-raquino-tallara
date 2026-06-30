@@ -57,6 +57,76 @@ const DATA = {
   /* ── Novidades ─────────────────────────────────────────── */
   novidades: [
     {
+      slug: "ruta-nocturna-2026",
+      emoji: "🌙",
+      image: "img/ruta-nocturna.jpg",
+      hasRutaForm: true,
+      gl: {
+        date:  "Setembro 2026",
+        title: "Ruta Nocturna 2026",
+        text:  "Este ano a ruta nocturna celébrase nun sábado! O 26 de setembro, ven camiñar baixo as estrelas polos camiños de Lousame. 10 € por persoa.",
+        detail: {
+          intro: "Atendendo ás peticións de moitos veciños, este ano a Ruta Nocturna celebrarase por primeira vez nun sábado! O 26 de setembro, camiñaremos xuntos polos sendeiros da parroquia baixo o ceo estrelado, gozando da natureza, a amizade e a diversión.",
+          infoCards: [
+            { icon: "📅", label: "Data",    value: "Sábado, 26 de setembro de 2026" },
+            { icon: "📍", label: "Lugar",   value: "Saída e chegada en Tállara" },
+            { icon: "💶", label: "Prezo",   value: "10 € por persoa" },
+            { icon: "📏", label: "Distancia", value: "Aproximadamente 8 km" },
+          ],
+          sections: [
+            {
+              icon: "🌙",
+              title: "Unha noite especial",
+              content: "Camiñaremos polas sendas da parroquia baixo o ceo estrelado, gozando da natureza e da tranquilidade do rural galego.",
+            },
+            {
+              icon: "🎒",
+              title: "Que inclúe?",
+              content: "Percorrido guiado · Avituallamento durante a ruta · Seguro de participación.",
+            },
+            {
+              icon: "👨‍👩‍👧‍👦",
+              title: "Para todos",
+              content: "Apto para todos os niveis e idades. Ven coa familia, amigos ou veciños!",
+            },
+          ],
+          closing: "Non te perdas esta experiencia única! Inscríbete xa e camiña con nós baixo as estrelas.",
+        },
+      },
+      es: {
+        date:  "Septiembre 2026",
+        title: "Ruta Nocturna 2026",
+        text:  "¡Este año la ruta nocturna se celebra en sábado! El 26 de septiembre, ven a caminar bajo las estrellas por los caminos de Lousame. 10 € por persona.",
+        detail: {
+          intro: "Atendiendo a las peticiones de muchos vecinos, ¡este año la Ruta Nocturna se celebrará por primera vez en sábado! El 26 de septiembre, caminaremos juntos por los senderos de la parroquia bajo el cielo estrellado, disfrutando de la naturaleza, la amistad y la diversión.",
+          infoCards: [
+            { icon: "📅", label: "Fecha",     value: "Sábado, 26 de septiembre de 2026" },
+            { icon: "📍", label: "Lugar",     value: "Salida y llegada en Tállara" },
+            { icon: "💶", label: "Precio",    value: "10 € por persona" },
+            { icon: "📏", label: "Distancia", value: "Aproximadamente 8 km" },
+          ],
+          sections: [
+            {
+              icon: "🌙",
+              title: "Una noche especial",
+              content: "Caminaremos por los senderos de la parroquia bajo el cielo estrellado, disfrutando de la naturaleza y la tranquilidad del rural gallego.",
+            },
+            {
+              icon: "🎒",
+              title: "¿Qué incluye?",
+              content: "Recorrido guiado · Avituallamiento durante la ruta · Seguro de participación.",
+            },
+            {
+              icon: "👨‍👩‍👧‍👦",
+              title: "Para todos",
+              content: "Apto para todos los niveles y edades. ¡Ven con la familia, amigos o vecinos!",
+            },
+          ],
+          closing: "¡No te pierdas esta experiencia única! Inscríbete ya y camina con nosotros bajo las estrellas.",
+        },
+      },
+    },
+    {
       slug: "xantar-popular",
       emoji: "🍽️",
       image: "img/xantar-popular.jpg",
@@ -492,6 +562,12 @@ const DATA = {
       ],
     },
   ],
+
+  /* ── Ruta Nocturna — Inscripcións ────────────────────────
+     Pon a true para abrir inscripcións, a false para pechalas. */
+  ruta_inscripcions_open: true,
+  ruta_precio_persona: 10,
+  ruta_iban: 'ES00 0000 0000 00 0000000000',
 
   /* ── Patrocinadores ─────────────────────────────────────── */
   patrocinadores: [

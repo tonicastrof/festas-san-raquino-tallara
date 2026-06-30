@@ -227,6 +227,7 @@
           ${entregaHtml}
           ${formHtml}
           <div id="inscripcion-online"></div>
+          ${nov.hasRutaForm ? '<div id="ruta-form-container"></div>' : ''}
           ${det.closing ? `
             <div class="nd-closing">
               <span class="nd-closing-icon">🌈</span>
@@ -239,6 +240,7 @@
       if (nov.eventoSlug && typeof checkAndRenderInscripcion === 'function') {
         checkAndRenderInscripcion(nov.eventoSlug, lang);
       }
+      if (nov.hasRutaForm) initRutaForm(lang);
     }
 
     function initForm() {
@@ -331,6 +333,288 @@
         btn.disabled = false;
         btn.textContent = T[lang].form_submit;
       });
+    }
+
+    /* ── Ruta Nocturna — formulario de inscrición ── */
+    function initRutaForm(lg) {
+      const container = document.getElementById('ruta-form-container');
+      if (!container) return;
+      const t = T[lg];
+      const isOpen = DATA.ruta_inscripcions_open;
+      const precio = DATA.ruta_precio_persona || 10;
+      const iban   = DATA.ruta_iban || '';
+
+      // Check section (always visible)
+      const checkHtml = `
+        <div class="ruta-check-section">
+          <h3>${t.ruta_check_title}</h3>
+          <p>${t.ruta_check_sub}</p>
+          <div class="ruta-check-row">
+            <input type="text" id="rutaCheckInput" placeholder="${t.ruta_check_placeholder}">
+            <button class="btn btn-ouro btn-sm" id="rutaCheckBtn">${t.ruta_check_btn}</button>
+          </div>
+          <div class="ruta-check-result" id="rutaCheckResult"></div>
+        </div>`;
+
+      if (!isOpen) {
+        container.innerHTML = `
+          <div class="ruta-closed-banner"><span>🔒</span>${t.ruta_closed}</div>
+          ${checkHtml}`;
+        initRutaCheck(lg);
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="ruta-form-section" id="rutaFormSection">
+          <div class="ruta-form-header">
+            <h3>${t.ruta_form_title}</h3>
+            <p>${t.ruta_form_sub}</p>
+          </div>
+          <form id="rutaForm" novalidate>
+            <div id="rutaParticipants"></div>
+            <button type="button" class="ruta-add-btn" id="rutaAddBtn">${t.ruta_add_person}</button>
+            <div class="ruta-total-bar">
+              <span class="ruta-total-label">${t.ruta_total}</span>
+              <span class="ruta-total-value" id="rutaTotal">${precio} €</span>
+            </div>
+            <div class="ruta-form-msg" id="rutaFormMsg"></div>
+            <button type="submit" class="btn btn-ouro">${t.ruta_submit}</button>
+          </form>
+        </div>
+        ${checkHtml}`;
+
+      let count = 0;
+
+      function addParticipant() {
+        count++;
+        const card = document.createElement('div');
+        card.className = 'ruta-participant-card';
+        card.dataset.idx = count;
+        card.innerHTML = `
+          <div class="ruta-participant-label">
+            <span>${t.ruta_persona} ${count}</span>
+            ${count > 1 ? `<button type="button" class="ruta-remove-btn" data-remove="${count}">${t.ruta_remove}</button>` : ''}
+          </div>
+          <div class="ruta-fields-grid">
+            <div class="ruta-field">
+              <label>${t.ruta_nome} *</label>
+              <input type="text" data-field="nome" required>
+            </div>
+            <div class="ruta-field">
+              <label>${t.ruta_apelidos} *</label>
+              <input type="text" data-field="apelidos" required>
+            </div>
+            <div class="ruta-field">
+              <label>${t.ruta_dni} *</label>
+              <input type="text" data-field="dni" required>
+            </div>
+            <div class="ruta-field">
+              <label>${t.ruta_telefono} *</label>
+              <input type="tel" data-field="telefono" required>
+            </div>
+          </div>`;
+        document.getElementById('rutaParticipants').appendChild(card);
+
+        const rmBtn = card.querySelector('.ruta-remove-btn');
+        if (rmBtn) rmBtn.addEventListener('click', () => { card.remove(); updateTotal(); renumber(); });
+        updateTotal();
+      }
+
+      function updateTotal() {
+        const n = document.querySelectorAll('.ruta-participant-card').length;
+        document.getElementById('rutaTotal').textContent = (n * precio) + ' €';
+      }
+
+      function renumber() {
+        document.querySelectorAll('.ruta-participant-card').forEach((c, i) => {
+          c.querySelector('.ruta-participant-label span').textContent = t.ruta_persona + ' ' + (i + 1);
+        });
+      }
+
+      addParticipant();
+      document.getElementById('rutaAddBtn').addEventListener('click', addParticipant);
+
+      document.getElementById('rutaForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('rutaFormMsg');
+        msg.className = 'ruta-form-msg';
+        msg.textContent = '';
+
+        const cards = document.querySelectorAll('.ruta-participant-card');
+        const participantes = [];
+        let valid = true;
+
+        cards.forEach(c => {
+          const p = {};
+          c.querySelectorAll('input[data-field]').forEach(inp => {
+            p[inp.dataset.field] = inp.value.trim();
+            if (!p[inp.dataset.field]) valid = false;
+          });
+          participantes.push(p);
+        });
+
+        if (!valid || !participantes.length) {
+          msg.className = 'ruta-form-msg ruta-form-msg-error';
+          msg.textContent = t.ruta_required;
+          return;
+        }
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = t.ruta_sending;
+
+        const tel = participantes[0].telefono;
+        const { data, error } = await submitRutaInscripcion(participantes, tel, null);
+
+        if (error) {
+          msg.className = 'ruta-form-msg ruta-form-msg-error';
+          msg.textContent = t.ruta_required;
+          btn.disabled = false;
+          btn.textContent = t.ruta_submit;
+          return;
+        }
+
+        showRutaSuccess(data, lg);
+      });
+
+      initRutaCheck(lg);
+    }
+
+    function showRutaSuccess(data, lg) {
+      const t = T[lg];
+      const section = document.getElementById('rutaFormSection');
+      section.innerHTML = `
+        <div class="ruta-success-card">
+          <div class="ruta-success-icon">✓</div>
+          <h3>${t.ruta_success_title}</h3>
+          <p style="margin-bottom:0.5rem">${t.ruta_success_code}</p>
+          <div class="ruta-code-display">${data.codigo}</div>
+          <div class="ruta-info-row">
+            <span class="ruta-info-label">${t.ruta_success_amount}</span>
+            <span class="ruta-info-value">${data.total_euros} €</span>
+          </div>
+          <div class="ruta-info-row">
+            <span class="ruta-info-label">${t.ruta_success_iban}</span>
+            <span class="ruta-iban-display">${DATA.ruta_iban}</span>
+            <span class="ruta-iban-note">${t.ruta_success_iban_note}</span>
+          </div>
+          <div class="ruta-upload-section">
+            <label>${t.ruta_upload_label}</label>
+            <div class="ruta-upload-row">
+              <div class="file-upload" style="flex:1;min-width:200px">
+                <input type="file" id="rutaComprobanteFile" accept=".pdf">
+                <div class="file-upload-content">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--verde)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span class="file-upload-label" id="rutaFileLabel">${t.ruta_upload_help}</span>
+                </div>
+              </div>
+              <button class="btn btn-ouro btn-sm" id="rutaUploadBtn">${t.ruta_upload_btn}</button>
+            </div>
+            <div class="ruta-upload-msg" id="rutaUploadMsg"></div>
+          </div>
+        </div>`;
+
+      const fileInput = document.getElementById('rutaComprobanteFile');
+      const fileLabel = document.getElementById('rutaFileLabel');
+
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+          const f = fileInput.files[0];
+          fileLabel.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
+          fileLabel.closest('.file-upload').classList.add('has-file');
+        } else {
+          fileLabel.textContent = t.ruta_upload_help;
+          fileLabel.closest('.file-upload').classList.remove('has-file');
+        }
+      });
+
+      document.getElementById('rutaUploadBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('rutaUploadBtn');
+        const msg = document.getElementById('rutaUploadMsg');
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024) {
+          msg.className = 'ruta-upload-msg ruta-upload-msg-err';
+          msg.textContent = lg === 'gl' ? 'O arquivo é demasiado grande (máx. 10 MB).' : 'El archivo es demasiado grande (máx. 10 MB).';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = lg === 'gl' ? 'Enviando...' : 'Enviando...';
+        msg.className = 'ruta-upload-msg';
+        msg.textContent = '';
+
+        const { error } = await uploadRutaComprobante(data.id, data.codigo, file);
+
+        if (error) {
+          msg.className = 'ruta-upload-msg ruta-upload-msg-err';
+          msg.textContent = t.ruta_upload_error;
+          btn.disabled = false;
+          btn.textContent = t.ruta_upload_btn;
+        } else {
+          msg.className = 'ruta-upload-msg ruta-upload-msg-ok';
+          msg.textContent = t.ruta_upload_success;
+          btn.style.display = 'none';
+        }
+      });
+    }
+
+    function initRutaCheck(lg) {
+      const t = T[lg];
+      const btn = document.getElementById('rutaCheckBtn');
+      const input = document.getElementById('rutaCheckInput');
+      if (!btn || !input) return;
+
+      async function doCheck() {
+        const q = input.value.trim();
+        if (!q) return;
+        const result = document.getElementById('rutaCheckResult');
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        const { data } = await lookupRutaInscripcion(q);
+
+        btn.disabled = false;
+        btn.textContent = t.ruta_check_btn;
+
+        if (!data) {
+          result.innerHTML = `<p style="color:#b91c1c;font-size:0.9rem;margin-top:0.75rem">${t.ruta_check_not_found}</p>`;
+          return;
+        }
+
+        const statusKey = 'ruta_status_' + data.estado;
+        const statusText = t[statusKey] || data.estado;
+        const badgeClass = 'ruta-badge-' + data.estado;
+        const partList = (data.participantes || []).map(p => `<li>${p.nome} ${p.apelidos} — ${p.dni}</li>`).join('');
+
+        result.innerHTML = `
+          <div class="ruta-status-card" style="margin-top:0.75rem">
+            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+              <span class="ruta-status-badge ${badgeClass}">${statusText}</span>
+            </div>
+            <div class="ruta-info-row">
+              <span class="ruta-info-label">${t.ruta_status_code}</span>
+              <span class="ruta-info-value">${data.codigo}</span>
+            </div>
+            <div class="ruta-info-row">
+              <span class="ruta-info-label">${t.ruta_status_amount}</span>
+              <span class="ruta-info-value">${data.total_euros} €</span>
+            </div>
+            <div class="ruta-info-row">
+              <span class="ruta-info-label">${t.ruta_status_people} (${data.total_persoas})</span>
+              <ul style="margin:0;padding-left:1.25rem;font-size:0.9rem;color:var(--escuro)">${partList}</ul>
+            </div>
+            ${data.estado === 'pendente_pago' && DATA.ruta_inscripcions_open ? `
+              <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--gris-claro)">
+                <p style="font-size:0.85rem;color:var(--gris);margin-bottom:0.5rem">${t.ruta_success_iban}</p>
+                <span class="ruta-iban-display">${DATA.ruta_iban}</span>
+              </div>` : ''}
+          </div>`;
+      }
+
+      btn.addEventListener('click', doCheck);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doCheck(); } });
     }
 
     renderDetail();
