@@ -8,18 +8,18 @@ const DATA = {
   /* ── Banner do Hero (carousel) ─────────────────────────── */
   heroBanner: [
     {
-      image: "img/cabecerafiesta.png",
+      image: "img/ruta-nocturna.png",
       gl: {
-        title: "Festas de San Roquiño 2026",
-        subtitle: "Tállara · Lousame · A Coruña",
-        cta: "Ver programa",
-        ctaLink: "#festas",
+        title: "Ruta Nocturna 2026",
+        subtitle: "26 de setembro · Tállara · 10 € por persoa",
+        cta: "Inscríbete",
+        ctaLink: "novidade.html#ruta-nocturna-2026",
       },
       es: {
-        title: "Fiestas de San Roquiño 2026",
-        subtitle: "Tállara · Lousame · A Coruña",
-        cta: "Ver programa",
-        ctaLink: "#festas",
+        title: "Ruta Nocturna 2026",
+        subtitle: "26 de septiembre · Tállara · 10 € por persona",
+        cta: "Inscríbete",
+        ctaLink: "novidade.html#ruta-nocturna-2026",
       },
     },
     {
